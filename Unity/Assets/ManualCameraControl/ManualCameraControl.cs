@@ -1,109 +1,65 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-
-
-
 public class ManualCameraControl : MonoBehaviour {
 
-
-    public float XSensitivity = 2f;
-    public float YSensitivity = 2f;
-    public bool clampVerticalRotation = true;
-    public float MinimumX = -90F;
-    public float MaximumX = 90F;
-    public bool smooth;
-    public float smoothTime = 5f;
-    public bool lockCursor = true;
-
-    // Use this for initialization
     void Start () {
 	
 	}
 
     float yStart;
     float xStart;
+    float xDelta;
+    float yDelta;
+    private float TurnSensitivity = 400;
+    private float MoveSensitivity = 0.5f;
+    bool turning;
+    Vector3 initialRot;
+    Vector3 newRot;
 
-	// Update is called once per frame
 	void Update () {
-
-        float yRot = Input.GetAxis("Mouse X") * XSensitivity;
-        float xRot = Input.GetAxis("Mouse Y") * YSensitivity;
 
         if (Input.GetMouseButtonDown(1))
         {
-             yStart = Input.GetAxis("Mouse X") * XSensitivity;
-             xStart = Input.GetAxis("Mouse Y") * YSensitivity;
+            xStart = Input.mousePosition.x ;
+            yStart = Input.mousePosition.y ;
+            turning = true;
+            initialRot = transform.localEulerAngles;
         }
 
+        if(turning)
+        {
+            xDelta = (Input.mousePosition.x - xStart) / Screen.width;
+            yDelta = (Input.mousePosition.y - yStart) / Screen.height;            
 
-        Debug.Log(Input.GetAxis("Mouse X") * XSensitivity);
+            transform.localEulerAngles = new Vector3(initialRot.x - yDelta * TurnSensitivity, initialRot.y + xDelta * TurnSensitivity, 0);
+        }
 
         if (Input.GetMouseButtonUp(1))
-            Debug.Log("here2");
-
-
-        
-
-        
-    }
-
-
-
-
-
-
-
-    private Quaternion m_CharacterTargetRot;
-    private Quaternion m_CameraTargetRot;
-    private bool m_cursorIsLocked = true;
-
-    public void Init(Transform character, Transform camera)
-    {
-        m_CharacterTargetRot = character.localRotation;
-        m_CameraTargetRot = camera.localRotation;
-    }
-
-
-    public void LookRotation(Transform character, Transform camera)
-    {
-        float yRot = Input.GetAxis("Mouse X") * XSensitivity;
-        float xRot = Input.GetAxis("Mouse Y") * YSensitivity;
-
-        m_CharacterTargetRot *= Quaternion.Euler(0f, yRot, 0f);
-        m_CameraTargetRot *= Quaternion.Euler(-xRot, 0f, 0f);
-
-        if (clampVerticalRotation)
-            m_CameraTargetRot = ClampRotationAroundXAxis(m_CameraTargetRot);
-
-        if (smooth)
         {
-            character.localRotation = Quaternion.Slerp(character.localRotation, m_CharacterTargetRot,
-                smoothTime * Time.deltaTime);
-            camera.localRotation = Quaternion.Slerp(camera.localRotation, m_CameraTargetRot,
-                smoothTime * Time.deltaTime);
+            turning = false;
         }
-        else
+
+
+        if(Input.GetButton("MoveForward"))
         {
-            character.localRotation = m_CharacterTargetRot;
-            camera.localRotation = m_CameraTargetRot;
+            transform.Translate( Vector3.forward * MoveSensitivity );
+        }
+        else if (Input.GetButton("MoveBack"))
+        {
+            transform.Translate(Vector3.forward * MoveSensitivity * -1);
+        }
+        else if(Input.GetButton("MoveLeft"))
+        {
+            transform.Translate(Vector3.right * MoveSensitivity * -1);
+        }
+        else if(Input.GetButton("MoveRight"))
+        {
+            transform.Translate(Vector3.right * MoveSensitivity );
         }
 
     }
 
-    Quaternion ClampRotationAroundXAxis(Quaternion q)
-    {
-        q.x /= q.w;
-        q.y /= q.w;
-        q.z /= q.w;
-        q.w = 1.0f;
 
-        float angleX = 2.0f * Mathf.Rad2Deg * Mathf.Atan(q.x);
 
-        angleX = Mathf.Clamp(angleX, MinimumX, MaximumX);
-
-        q.x = Mathf.Tan(0.5f * Mathf.Deg2Rad * angleX);
-
-        return q;
-    }
 }
