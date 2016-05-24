@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+
+#if UNITY_EDITOR
 using System.IO;
+#endif
 
 public class WriteWav {
 
@@ -9,7 +12,9 @@ public class WriteWav {
 	public  int numBuffers;
 	private  int outputRate = 44100;
 	private  int headerSize = 44; //default for uncompressed wav
-	private  FileStream fileStream;
+
+#if UNITY_EDITOR
+    private  FileStream fileStream;
 	
 	public  void StartWriting(String name)
 	{
@@ -98,5 +103,6 @@ public class WriteWav {
 		
 		fileStream.Close();
 	}
+#endif
 
 }

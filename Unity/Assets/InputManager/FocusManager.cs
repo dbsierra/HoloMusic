@@ -2,6 +2,8 @@
 using System.Collections;
 using UnityEngine.VR.WSA.Input;
 
+
+
 /// <summary>
 /// FocusManager's job is to ray cast from the camera and keep a running tab of what object is currently in focus.
 /// </summary>

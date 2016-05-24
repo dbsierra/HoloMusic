@@ -102,36 +102,10 @@ public class PolySynth {
 	private WriteWav ww1;
 	private WriteWav ww2;
 
-	public float v1_sample;
-	public float v2_sample;
+
 	public float[] samples;
 
-	public void Record()
-	{
-		if( !rec )
-		{
-			rec = true;
-			ww1 = new WriteWav();
-			ww2 = new WriteWav();
-
-			ww1.StartWriting("v1");
-			ww2.StartWriting("v2");
-		}
-
-	}
-	public void StopRecord()
-	{
-		if( rec )
-		{
-			rec = false;
-			//WriteWav.WriteHeader();
-
-			ww1.WriteHeader();
-			ww2.WriteHeader();
-			Debug.Log("rec stop");
-		}
-
-	}
+	
 	
 	//Called on every sample, only perform computations that absolutely need to be per-sample here!
 	public float[] GetSample(float t)
