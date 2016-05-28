@@ -27,7 +27,7 @@ public class SynthManager : MonoBehaviour
     public Sequencer sequencer;
     private PolySynth ps;
 
-    private float sampling_frequency = 44100;
+    private float sampling_frequency;
     private float[] samples;
     private int sample = 0;
 
@@ -40,18 +40,30 @@ public class SynthManager : MonoBehaviour
     void Start()
     {
 		wavWriter = new WriteWav();
-		AudioSettings.GetDSPBufferSize(out wavWriter.bufferSize, out wavWriter.numBuffers);
+        sampling_frequency = AudioSettings.outputSampleRate;
+
+        AudioSettings.GetDSPBufferSize(out wavWriter.bufferSize, out wavWriter.numBuffers);
 
 		ps = new PolySynth();
     }
+
+
+    public void NoteOn(float f)
+    {
+        ps.Trigger(f, t);
+    }
+
+    public void NoteOff()
+    {
+
+    }
+
+    float t;
 
     void OnAudioFilterRead(float[] data, int channels)
     {
 		if( sequencer.Ready )
 		{
-
-	        float t = sample / sampling_frequency;
-
 
             //d1 = new float[data.Length];
             //d2 = new float[data.Length];
@@ -70,7 +82,7 @@ public class SynthManager : MonoBehaviour
                     oldStep = step;
                     foreach (float f in sequencer.GetNotes(step))
 	                {
-	                    ps.Trigger(f, t);
+                        ;// ps.Trigger(f, t);
 	                }
 				}
 				//-----------
@@ -92,7 +104,7 @@ public class SynthManager : MonoBehaviour
 
         if (recOutput)
         {
-            ;// wavWriter.ConvertAndWrite(d1);
+             wavWriter.ConvertAndWrite(data);
         }
     }
 
@@ -103,7 +115,7 @@ public class SynthManager : MonoBehaviour
 		ps.Decay  = decay;
         ps.FMModIndex = FMIndex;
 
-        /*
+        
         if (Input.GetKeyDown("r"))
         {   
             if (recOutput == false)
@@ -118,7 +130,7 @@ public class SynthManager : MonoBehaviour
                 Debug.Log("rec stop");
             }
         }
-        */
+        
     }
 
    

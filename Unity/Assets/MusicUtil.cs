@@ -4,11 +4,17 @@ using System.Collections.Generic;
 
 public static class MusicUtil {
 
+    public static int BPM;
+    public static float BeatLength;
+
     private static Dictionary<string, float> noteLookUp = new Dictionary<string, float>();
     private static Dictionary<string, int> notes = new Dictionary<string, int>();
 
     static MusicUtil()
     {
+        BPM = 120;
+        BeatLength = 60.0f/( (float)BPM * 4.0f);
+
         notes.Add("C", 0);
         notes.Add("D", 2);
         notes.Add("E", 4);
@@ -34,7 +40,6 @@ public static class MusicUtil {
         }
 
     }
-
 
     public static float getFreq(string n)
     {

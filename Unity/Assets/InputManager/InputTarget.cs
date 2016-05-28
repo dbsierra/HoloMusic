@@ -11,9 +11,19 @@ public class InputTarget : MonoBehaviour {
 	
     public void SendMessageTap()
     {
-        Debug.Log("we here");
+        Debug.Log("tap");
         gameObject.SendMessage("OnTap", SendMessageOptions.DontRequireReceiver);
     }
 
+    public void SendMessageGazeEnter()
+    {
+        Debug.Log("gaze enter");
+        gameObject.SendMessage("OnGazeEnter", SendMessageOptions.DontRequireReceiver);
+    }
 
+    public void SendMessageGazeExit()
+    {
+        Debug.Log("gaze exit");
+        gameObject.SendMessage("OnGazeExit", SendMessageOptions.DontRequireReceiver);
+    }
 }

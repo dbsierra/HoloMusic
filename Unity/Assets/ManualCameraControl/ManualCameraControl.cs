@@ -12,7 +12,7 @@ public class ManualCameraControl : MonoBehaviour {
     float xDelta;
     float yDelta;
     private float TurnSensitivity = 400;
-    private float MoveSensitivity = 0.5f;
+    private float MoveSensitivity = 0.1f;
     bool turning;
     Vector3 initialRot;
     Vector3 newRot;
