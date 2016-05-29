@@ -37,6 +37,8 @@ public class SynthManager : MonoBehaviour
     //private float[] d1;
     //private float[] d2;
 
+    FMSynthContainer voice;
+
     void Start()
     {
 		wavWriter = new WriteWav();
@@ -45,12 +47,16 @@ public class SynthManager : MonoBehaviour
         AudioSettings.GetDSPBufferSize(out wavWriter.bufferSize, out wavWriter.numBuffers);
 
 		ps = new PolySynth();
+
+        voice = new FMSynthContainer();
     }
 
 
     public void NoteOn(float f)
     {
-        ps.Trigger(f, t);
+        //ps.Trigger(f, t);
+
+        voice.NoteOn(f);
     }
 
     public void NoteOff()
@@ -87,8 +93,10 @@ public class SynthManager : MonoBehaviour
 				}
 				//-----------
 
-				samples = ps.GetSample(t);
-				data[i] = gain * (samples[0] + samples[1] + samples[2] + samples[3]);
+				//samples = ps.GetSample(t);
+				//data[i] = gain * (samples[0] + samples[1] + samples[2] + samples[3]);
+
+                data[i] = gain * voice.GetSample();
 
 				//d1[i] = samples[0];
 				//d2[i] = samples[1];	
@@ -115,7 +123,10 @@ public class SynthManager : MonoBehaviour
 		ps.Decay  = decay;
         ps.FMModIndex = FMIndex;
 
-        
+        voice.Attack = attack;
+        voice.Decay = decay;
+        voice.ModIndex = FMIndex;
+
         if (Input.GetKeyDown("r"))
         {   
             if (recOutput == false)

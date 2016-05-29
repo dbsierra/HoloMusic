@@ -10,10 +10,16 @@ public static class MusicUtil {
     private static Dictionary<string, float> noteLookUp = new Dictionary<string, float>();
     private static Dictionary<string, int> notes = new Dictionary<string, int>();
 
+    public static float inc;
+    public static float TWO_PI = 6.28318530718f;
+
     static MusicUtil()
     {
         BPM = 120;
         BeatLength = 60.0f/( (float)BPM * 4.0f);
+
+        inc = 1.0f / AudioSettings.outputSampleRate;
+        Debug.Log("here: " + inc);
 
         notes.Add("C", 0);
         notes.Add("D", 2);

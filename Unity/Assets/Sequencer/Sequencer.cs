@@ -158,8 +158,8 @@ public class Sequencer : MonoBehaviour {
         //TRIGGER!
         if ( step != oldStep )
         {
-
-            foreach ( float f in GetRow() )
+            //send note on event
+            foreach ( float f in GetNotes(step) )
             {
                 if( f != 0 )
                     instrument.NoteOn(f);
