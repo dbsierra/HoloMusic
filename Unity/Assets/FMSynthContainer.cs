@@ -2,7 +2,8 @@
 using System.Collections;
 
 /// <summary>
-/// Container that houses components for the FM Synthesizer
+/// Container that houses components for the FM Synthesizer. Gets wrapped in a SynthInterface and
+/// instanced when needed for each voice of the final synthesizer
 /// </summary>
 public class FMSynthContainer  {
 
@@ -13,9 +14,12 @@ public class FMSynthContainer  {
     public float Attack;
     public float Decay;
     public float ModIndex;
+    public float ModFreq;
 
     private bool noteOn;
     private bool noteOff;
+
+    public bool Playing { get { return noteOn; } }
 
     float sample;
 
@@ -31,6 +35,7 @@ public class FMSynthContainer  {
         noteOff = false;
         fmOsc.NoteOn(freq);
         fmOsc.modIndex = ModIndex;
+        fmOsc.ModFreq = ModFreq;
         eg.NoteOn();
         eg.Attack = Attack;
         eg.Decay = Decay;
@@ -43,9 +48,10 @@ public class FMSynthContainer  {
         eg.NoteOff();
     }
 
-    public float GetSample()
+    public float GetNextSample()
     {
 
+        //if( eg.Playing )
         sample = fmOsc.GetSample() * eg.GetSample();
 
 

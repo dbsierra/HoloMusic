@@ -15,11 +15,10 @@ public static class MusicUtil {
 
     static MusicUtil()
     {
-        BPM = 120;
+        BPM = 90;
         BeatLength = 60.0f/( (float)BPM * 4.0f);
 
         inc = 1.0f / AudioSettings.outputSampleRate;
-        Debug.Log("here: " + inc);
 
         notes.Add("C", 0);
         notes.Add("D", 2);

@@ -26,6 +26,7 @@ public class Sequencer : MonoBehaviour {
 
     public Color ActiveColor;
     public Color IdleColor;
+    public byte octave = 4;
 
     public TileData Grid;
 
@@ -34,7 +35,7 @@ public class Sequencer : MonoBehaviour {
 		get{ return size;}
 	}
 
-    private int octave = 4;
+    
 
 	private bool ready;
 	public bool Ready{

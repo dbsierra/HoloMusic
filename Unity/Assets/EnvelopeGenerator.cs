@@ -18,6 +18,7 @@ public class EnvelopeGenerator  {
 
     private bool noteOn;
     private bool noteOff;
+    public bool Playing { get { return noteOn; } }
 
     private float env;
 
@@ -46,13 +47,13 @@ public class EnvelopeGenerator  {
         {
             
             t += MusicUtil.inc;
-            
+
 
             if (t <= Attack)
                 env = t / Attack;
 
-            else if (t > Attack && t <= Decay)
-                env = 1 - ((t - Attack) / (Decay - Attack));
+            else if (t > Attack && t <= (Attack + Decay))
+                env = (1 - (t - Attack)) / Decay + 1/Decay;
 
             else
                 env = 0;

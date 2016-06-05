@@ -8,6 +8,7 @@ public class FMSynthEngine {
 
     float angFreq;          //frequency
     public float modIndex;  //modulation index
+    public float ModFreq;
 
     private bool noteOn;
     private bool noteOff;
@@ -37,17 +38,15 @@ public class FMSynthEngine {
 
     private float FM()
     {
-        float modulator = Mathf.Sin(phase * modIndex);
+        float modulator = modIndex * Mathf.Sin(phase * ModFreq);
         return Mathf.Sin(phase + modulator);
     }
 
     public float GetSample()
     {
-
+        
         phase += phaseInc;
 
-        //if (phase >= MusicUtil.TWO_PI)
-        //phase = 0;
 
         return FM();
 

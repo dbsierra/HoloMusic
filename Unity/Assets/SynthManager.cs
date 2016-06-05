@@ -20,24 +20,25 @@ public class SynthManager : MonoBehaviour
     public float attack = .1f;
     [Range(0.1f, 1f)]
     public float decay = .5f;
-	[Range(0,2)]
+	[Range(0,1)]
 	public float FMIndex;
+    [Range(0, 6)]
+    public float FMFreq;
     #endregion
 
-    public Sequencer sequencer;
-    private PolySynth ps;
-
     private float sampling_frequency;
-    private float[] samples;
     private int sample = 0;
 
     private int oldStep = -1;
     private int step = 0;
 
-    //private float[] d1;
-    //private float[] d2;
 
-    FMSynthContainer voice;
+    [Range(1, 16)]
+    public byte VoiceCount;
+    private float voiceAttenuator;
+    private FMSynthContainer[] voices;
+    private byte overflowCounter;
+    private float finalSample;
 
     void Start()
     {
@@ -46,87 +47,85 @@ public class SynthManager : MonoBehaviour
 
         AudioSettings.GetDSPBufferSize(out wavWriter.bufferSize, out wavWriter.numBuffers);
 
-		ps = new PolySynth();
 
-        voice = new FMSynthContainer();
+        voices = new FMSynthContainer[VoiceCount];
+
+        for ( int i=0; i< voices.Length; i++ )
+        {
+            voices[i] = new FMSynthContainer();
+        }
+
+        voiceAttenuator = 1f / voices.Length;
     }
 
 
     public void NoteOn(float f)
     {
-        //ps.Trigger(f, t);
 
-        voice.NoteOn(f);
+        //find first free voice. If no free voices, assign to index of overflowCounter, and increment overflowCounter, 
+        //reset to 0 if it exceeds voices.Length
+        bool found = false;
+        for( int i=0; i< voices.Length; i++ )
+        {
+            if( !voices[i].Playing )
+            {
+                found = true;
+                voices[i].NoteOn(f);
+                break;
+            }
+        }
+        if( !found )
+        {
+            voices[overflowCounter++].NoteOn(f);
+            if (overflowCounter >= voices.Length)
+                overflowCounter = 0;
+        }
     }
 
-    public void NoteOff()
-    {
 
-    }
-
-    float t;
 
     void OnAudioFilterRead(float[] data, int channels)
     {
-		if( sequencer.Ready )
-		{
 
-            //d1 = new float[data.Length];
-            //d2 = new float[data.Length];
-
-            //for each sample of this block of audio data
-            for (int i = 0; i < data.Length; i = i + channels)
-	        {
-				t = sample / sampling_frequency;
-
-                //calculate step
-                step = (int)Mathf.Floor(t * speed) % sequencer.Size;
-
-				//TRIGGERED!
-				if(step != oldStep)
-				{
-                    oldStep = step;
-                    foreach (float f in sequencer.GetNotes(step))
-	                {
-                        ;// ps.Trigger(f, t);
-	                }
-				}
-				//-----------
-
-				//samples = ps.GetSample(t);
-				//data[i] = gain * (samples[0] + samples[1] + samples[2] + samples[3]);
-
-                data[i] = gain * voice.GetSample();
-
-				//d1[i] = samples[0];
-				//d2[i] = samples[1];	
-	            if (channels == 2){
-					data[i + 1] = data[i];
-					//d1[i+1] = samples[0];
-					//d2[i+1] = samples[1];
-				}
-	               
-	            sample += 1;
-	        }
-		}
-
-        if (recOutput)
+        //for each sample of this block of audio data
+        for (int i = 0; i < data.Length; i = i + channels)
         {
-             wavWriter.ConvertAndWrite(data);
+            finalSample = 0;
+            foreach (FMSynthContainer v in voices)
+            {
+                ;// finalSample += v.GetNextSample();
+            }
+
+            //data[i] = gain * finalSample * voiceAttenuator;
+            data[i] = gain * voices[0].GetNextSample();
+
+            if (channels == 2)
+            {
+                data[i + 1] = data[i];
+            }
+
+            sample += 1;
         }
+
+
+         if (recOutput)
+         {
+             wavWriter.ConvertAndWrite(data);
+         }
     }
 
     void Update()
     {
 
-		ps.Attack = attack;
-		ps.Decay  = decay;
-        ps.FMModIndex = FMIndex;
+        foreach (FMSynthContainer v in voices)
+        {
+            v.Attack = attack;
+            v.Decay = decay;
+            v.ModIndex = FMIndex;
+            v.ModFreq = FMFreq;
+        }
 
-        voice.Attack = attack;
-        voice.Decay = decay;
-        voice.ModIndex = FMIndex;
-
+        
         if (Input.GetKeyDown("r"))
         {   
             if (recOutput == false)
