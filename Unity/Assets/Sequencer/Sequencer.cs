@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using MusicUtil;
 
 /// <summary>
 /// The Sequencer will hold a 16x12 array of bools.
@@ -35,12 +36,8 @@ public class Sequencer : MonoBehaviour {
 		get{ return size;}
 	}
 
-    
-
 	private bool ready;
-	public bool Ready{
-		get{ return ready;}
-	}
+	public bool Ready{get{ return ready;}}
 
     private matrixRow[] matrix;
     private struct matrixRow
@@ -48,29 +45,87 @@ public class Sequencer : MonoBehaviour {
         public int count;
         public float[] notes;
         public SequencerBlock[] blocks;
+        public List<MIDINote> midiNotes;
     }
+    private List<MIDINote> notesCurrentlyPlaying;
 
-    private byte step;
-    private byte oldStep = byte.MaxValue;
+
+    private byte step = 0;
+    private byte oldStep = 0;
     private float time;
 
     private float spacing = .05f;
 
-    void Awake () {
-
-        
-        pianoNotes = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-
+    #region sequencer matrix functions
+    /// <summary>
+    /// Add some values to the sequencer matrix for quick debug purposes
+    /// </summary>
+    private void SequencerDebugValues()
+    {
+        AddNote(0, "C", 2, 1);
+        AddNote(4, "D", 2, 1);
+        AddNote(8, "E", 2, 1);
+        AddNote(12, "F", 2, 1);
+    }
+    /// <summary>
+    /// Pint out the sequencer matrix
+    /// </summary>
+    private void SequencerPrint()
+    {
+        for (int i = 0; i < matrix.Length; i++)
+        {
+            string s = "";
+            foreach( MIDINote n in matrix[i].midiNotes )
+            {
+                s += " " + MusicUtil.MusicUtil.getFreq( n.midi );
+            }
+            //Debug.Log("beat:" + i + " | " + s);
+        }
+    }
+    /// <summary>
+    /// Initialize the sequencer matrix
+    /// </summary>
+    private void InitSequencerMatrix()
+    {
         matrix = new matrixRow[16];
 
-        for( int i =0; i < matrix.Length; i++ )
+        for (int i = 0; i < matrix.Length; i++)
         {
             matrix[i].count = 0;
             matrix[i].notes = new float[12];
             matrix[i].blocks = new SequencerBlock[12];
-        }
+            matrix[i].midiNotes = new List<MIDINote>();
+        } 
+    }
+    #endregion
 
-		ready = true;
+    /// <summary>
+    /// Add a note to the sequencer matrix
+    /// </summary>
+    /// <param name="beat">The beat you are adding a note to</param>
+    /// <param name="note">The name of the C sans octave</param>
+    /// <param name="length">The length of the note</param>
+    /// <param name="velocity">The velocity of the note</param>
+    public void AddNote(byte beat, string note, byte length, byte velocity)
+    {
+        MIDINote n = new MIDINote();
+        n.midi = MusicUtil.MusicUtil.getMIDI(note + octave);
+        n.frequency = MusicUtil.MusicUtil.getFreq(note + octave);
+        n.duration = length;
+        n.velocity = velocity;
+        matrix[beat].midiNotes.Add(n);
+    }
+
+    void Awake () {
+
+        pianoNotes = new string[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+
+        notesCurrentlyPlaying = new List<MIDINote>();
+        InitSequencerMatrix();
+        SequencerDebugValues();
+        SequencerPrint();
+
+        ready = true;
 
         //assemble the sequencer GUI
         float size = SeqBlock.transform.localScale.x;
@@ -84,38 +139,17 @@ public class Sequencer : MonoBehaviour {
                 matrix[col].blocks[row].Beat = col;
             }
         }
+        Debug.Log("Sequencer done initializing");
 	}
 
-    /// <summary>
-    /// Adds a note to the sequencer matrix
-    /// </summary>
-    /// <param name="beat"></param>
-    /// <param name="noteIndex"></param>
-    public void AddNote(int beat, int noteIndex)
-    {
-        matrix[beat].notes[noteIndex] = MusicUtil.getFreq( pianoNotes[noteIndex] + octave );
-        matrix[beat].count++;
-    }
-
-    /// <summary>
-    /// remove a note from the sequencer matrix
-    /// </summary>
-    /// <param name="beat"></param>
-    /// <param name="noteIndex"></param>
-    public void RemoveNote(int beat, int noteIndex)
-    {
-        matrix[beat].notes[noteIndex] = 0;
-        matrix[beat].count--;
-    }
 
     /// <summary>
     /// return all notes for this beat
     /// </summary>
     /// <returns>array of all notes for this row</returns>
-    public float[] GetRow()
+    private List<MIDINote> GetRow()
     {
-        
-        return matrix[step].notes;
+        return matrix[step].midiNotes;
     }
 
     public float[] GetNotes(int beat)
@@ -139,7 +173,7 @@ public class Sequencer : MonoBehaviour {
         {
             if (n != null)
             {
-                freqs[i] = MusicUtil.getFreq(n);
+                freqs[i] = MusicUtil.MusicUtil.getFreq(n);
                 //Debug.Log(freqs[i]);
                 i++;
             }
@@ -150,31 +184,33 @@ public class Sequencer : MonoBehaviour {
         return freqs;
     }
 
-    
-	void Update () {
-        time += Time.deltaTime;
-
-        step = (byte)(Mathf.Floor( time / MusicUtil.BeatLength ) % size);
-
-        //TRIGGER!
-        if ( step != oldStep )
+    public void OnStep(byte s)
+    {
+        step = s;
+        //send note over
+        foreach( MIDINote n in GetRow() )
         {
-            //send note on event
-            foreach ( float f in GetNotes(step) )
-            {
-                if( f != 0 )
-                    instrument.NoteOn(f);
-            }
+
+            //Debug.Log("On " + n.midi);
+            instrument.NoteOn(n);
+        }
+        
+    }
+
+    void Update () {
+       
+        if( step != oldStep )
+        {
+           // Debug.Log("TRIGGER on MAIN THREAD");
+            oldStep = step;
 
             for (int i = 0; i < 12; i++)
             {
                 matrix[step].blocks[i].Highlight();
 
-                if( oldStep >= 0 && oldStep <= matrix.Length )
-                    matrix[oldStep].blocks[i].DeHighlight();    
+                if (oldStep >= 0 && oldStep <= matrix.Length)
+                    matrix[oldStep].blocks[i].DeHighlight();
             }
-
-            oldStep = step;
         }
     }
 

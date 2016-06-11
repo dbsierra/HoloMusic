@@ -25,15 +25,10 @@ public class FMSynthEngine {
         SetFrequency(freq);
         phase = 0;
     }
-    public void NoteOff()
-    {
-        noteOff = true;
-        noteOn = false;
-        phase = 0;
-    }
+
     public void SetFrequency(float freq)
     {
-        phaseInc = freq * MusicUtil.TWO_PI * MusicUtil.inc;
+        phaseInc = freq * MusicUtil.MusicUtil.TWO_PI * MusicUtil.MusicUtil.inc;
     }
 
     private float FM()

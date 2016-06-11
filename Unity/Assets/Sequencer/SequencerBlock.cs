@@ -30,13 +30,13 @@ public class SequencerBlock : MonoBehaviour {
         {
             m.SetColor("_Color1", parent.ActiveColor);
             Highlight();
-            parent.AddNote(Beat, NoteIndex);
+            //parent.AddNote(Beat, NoteIndex, 1, 1);
         }
         else
         {
             m.SetColor("_Color1", parent.IdleColor);
             Highlight();
-            parent.RemoveNote(Beat, NoteIndex);
+           // parent.RemoveNote(Beat, NoteIndex, 1, 1);
         }
     }
 
