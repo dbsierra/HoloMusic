@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using MusicUtilities;
 
 public class EnvelopeGenerator
 {
@@ -38,10 +39,10 @@ public class EnvelopeGenerator
         state = State.attack;
 
         //Ensure nothing is 0
-        Attack = Mathf.Max(MusicUtil.MusicUtil.inc, Attack );
-        Decay = Mathf.Max(MusicUtil.MusicUtil.inc, Decay);
+        Attack = Mathf.Max(Settings.inc, Attack );
+        Decay = Mathf.Max(Settings.inc, Decay);
         Sustain = Mathf.Clamp(Sustain, 0, 1);
-        Release = Mathf.Max(MusicUtil.MusicUtil.inc, Release);
+        Release = Mathf.Max(Settings.inc, Release);
 
         t = env = 0;
     }
@@ -72,11 +73,11 @@ public class EnvelopeGenerator
             {
                 t = 0;
                 attackEnter = true;
-                Debug.Log("AttackStart: " + MasterClock.Instance.MyTime + " " + env);
+                //Debug.Log("AttackStart: " + MasterClock.Instance.MyTime + " " + env);
             }
             if (t >= Attack)
             {
-                Debug.Log("AttackEnd: " + MasterClock.Instance.MyTime + " " + env);
+                //Debug.Log("AttackEnd: " + MasterClock.Instance.MyTime + " " + env);
                 state = State.decay;
                 env = 1;
             } 
@@ -93,11 +94,11 @@ public class EnvelopeGenerator
             {
                 t = 0;
                 decayEnter = true;
-                Debug.Log("DecayStart: " + MasterClock.Instance.MyTime + " " + env);
+                //Debug.Log("DecayStart: " + MasterClock.Instance.MyTime + " " + env);
             }
             if (env <= Sustain && state != State.release)
             {
-                Debug.Log("DecayEnd: " + MasterClock.Instance.MyTime + " " + env);
+               // Debug.Log("DecayEnd: " + MasterClock.Instance.MyTime + " " + env);
                 env = Sustain;
                 state = State.sustain; 
             }
@@ -116,17 +117,17 @@ public class EnvelopeGenerator
                 envSnapshot = env;
                 release = true;
   
-                Debug.Log(name + " ReleaseStart: " + MasterClock.Instance.MyTime + " " + env + );
+               // Debug.Log(name + " ReleaseStart: " + MasterClock.Instance.MyTime + " " + env);
             }
             if (env <= 0 || t >= Release)
             {
-                Debug.Log(name + " ReleaseEnd: " + MasterClock.Instance.MyTime + " " + env);
+              //  Debug.Log(name + " ReleaseEnd: " + MasterClock.Instance.MyTime + " " + env);
                 state = State.off;
                 env = 0;
             }
             else
             {
-                env -= MusicUtil.MusicUtil.inc *  envSnapshot * (1/Release) ;
+                env -= Settings.inc *  envSnapshot * (1/Release) ;
 
 
                 
@@ -134,7 +135,7 @@ public class EnvelopeGenerator
                 
         }
 
-        t += MusicUtil.MusicUtil.inc;
+        t += Settings.inc;
 
 
         return env;

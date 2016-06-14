@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using MusicUtilities;
 
 /// <summary>
 /// Container that houses components for the FM Synthesizer. Gets wrapped in a SynthInterface and
@@ -7,7 +8,7 @@ using System.Collections;
 /// </summary>
 public class FMSynthContainer  {
 
-    MusicUtil.MIDINote note;
+    MIDINote note;
 
     EnvelopeGenerator eg;
     FMSynthEngine fmOsc;
@@ -41,7 +42,7 @@ public class FMSynthContainer  {
         eg = new EnvelopeGenerator(n);
     }
     bool go;
-    public void NoteOn(MusicUtil.MIDINote note)
+    public void NoteOn(MIDINote note)
     {
         this.note = note;
 
@@ -57,7 +58,7 @@ public class FMSynthContainer  {
         eg.Release = Release;
         time = 0;
         //Debug.Log("note on " + note.frequency + " time: " + time);
-        duration = (uint)(note.duration * MusicUtil.MusicUtil.BeatLength * MusicUtil.MusicUtil.SampleRate);
+        duration = (uint)(note.duration * Settings.BeatLength * Settings.SampleRate);
         //Debug.Log(MusicUtil.MusicUtil.BeatLength + " ");
     }
     /*
@@ -103,7 +104,7 @@ public class FMSynthContainer  {
 
             if ( eg.CurState == EnvelopeGenerator.State.off )
             {
-                Debug.Log("Stopped playing at: " + MasterClock.Instance.MyTime);
+                //Debug.Log("Stopped playing at: " + MasterClock.Instance.MyTime);
                 StopPlaying();
             }
                 
@@ -114,7 +115,7 @@ public class FMSynthContainer  {
             if (sampleCount - startTime >= 1000)
             {
                 //Debug.Log(name + " " + env);
-                Debug.Log(name + " " + playing);
+                //Debug.Log(name + " " + playing);
                 startTime = sampleCount;
             }
         }

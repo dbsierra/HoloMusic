@@ -2,21 +2,31 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace MusicUtil
+namespace MusicUtilities
 {
     /// <summary>
     /// Represents a single midi note
     /// </summary>
-    public struct MIDINote
+    public class MIDINote
     {
         public byte midi;
         public byte duration;
         public byte velocity;
         public float frequency;
+
+        public MIDINote() { }
+
+        public MIDINote(byte midi, byte duration, byte velocity)
+        {
+            this.midi = midi;
+            this.duration = duration;
+            this.velocity = velocity;
+            this.frequency = Settings.getFreq(midi);
+        }
     }
+    
 
-
-    public static class MusicUtil
+    public class Settings
     {
 
         public static int BPM;
@@ -46,7 +56,7 @@ namespace MusicUtil
         public static float inc;
         public static float TWO_PI = 6.28318530718f;
 
-        static MusicUtil()
+        static Settings()
         {
             //hard coded BPM for now
             BPM = 60;

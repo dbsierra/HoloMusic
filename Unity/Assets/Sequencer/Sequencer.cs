@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using MusicUtil;
+using MusicUtilities;
 
 /// <summary>
 /// The Sequencer will hold a 16x12 array of bools.
@@ -21,6 +21,11 @@ public class Sequencer : MonoBehaviour {
 	string[] pianoNotes;
     float[] frequencies;
 
+    public struct TestStruct
+    {
+        public int yeah;
+    }
+    public TestStruct test;
 
     public SequencerBlock SeqBlock;
     public SynthManager instrument;
@@ -76,8 +81,8 @@ public class Sequencer : MonoBehaviour {
         {
             string s = "";
             foreach( MIDINote n in matrix[i].midiNotes )
-            {
-                s += " " + MusicUtil.MusicUtil.getFreq( n.midi );
+            {               
+                s += " " + Settings.getFreq( n.midi );
             }
             //Debug.Log("beat:" + i + " | " + s);
         }
@@ -108,11 +113,8 @@ public class Sequencer : MonoBehaviour {
     /// <param name="velocity">The velocity of the note</param>
     public void AddNote(byte beat, string note, byte length, byte velocity)
     {
-        MIDINote n = new MIDINote();
-        n.midi = MusicUtil.MusicUtil.getMIDI(note + octave);
-        n.frequency = MusicUtil.MusicUtil.getFreq(note + octave);
-        n.duration = length;
-        n.velocity = velocity;
+        MIDINote n = new MIDINote(Settings.getMIDI(note + octave), length, velocity) ;
+        n.midi = Settings.getMIDI(note + octave);
         matrix[beat].midiNotes.Add(n);
     }
 
@@ -137,10 +139,20 @@ public class Sequencer : MonoBehaviour {
                 matrix[col].blocks[row].transform.parent = transform;
                 matrix[col].blocks[row].NoteIndex = row;
                 matrix[col].blocks[row].Beat = col;
+
             }
         }
         Debug.Log("Sequencer done initializing");
-	}
+
+        for (int row = 0; row < 16; row++)
+        {
+            foreach( MIDINote n in matrix[row].midiNotes )
+            {
+
+                Debug.Log( n.midi );
+            }
+        }
+    }
 
 
     /// <summary>
@@ -173,7 +185,7 @@ public class Sequencer : MonoBehaviour {
         {
             if (n != null)
             {
-                freqs[i] = MusicUtil.MusicUtil.getFreq(n);
+                freqs[i] = Settings.getFreq(n);
                 //Debug.Log(freqs[i]);
                 i++;
             }
@@ -187,12 +199,14 @@ public class Sequencer : MonoBehaviour {
     public void OnStep(byte s)
     {
         step = s;
+        Debug.Log(s);
         //send note over
         foreach( MIDINote n in GetRow() )
         {
 
             //Debug.Log("On " + n.midi);
             instrument.NoteOn(n);
+           // Debug.Log(n.midi);
         }
         
     }

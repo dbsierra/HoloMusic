@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
-using MusicUtil;
+using MusicUtilities;
 
 public class SynthManager : MonoBehaviour
 {
@@ -29,6 +29,8 @@ public class SynthManager : MonoBehaviour
 	public float FMIndex;
     [Range(0, 6)]
     public float FMFreq;
+    [Range(1, 16)]
+    public byte VoiceCount;
     #endregion
 
     private float sampling_frequency;
@@ -38,8 +40,7 @@ public class SynthManager : MonoBehaviour
     private int step = 0;
 
 
-    [Range(1, 16)]
-    public byte VoiceCount;
+
     private float voiceAttenuator;
     private FMSynthContainer[] voices;
     private byte overflowCounter;

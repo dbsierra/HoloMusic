@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using MusicUtilities;
 
 public class FMSynthEngine {
 
@@ -28,7 +29,7 @@ public class FMSynthEngine {
 
     public void SetFrequency(float freq)
     {
-        phaseInc = freq * MusicUtil.MusicUtil.TWO_PI * MusicUtil.MusicUtil.inc;
+        phaseInc = freq * Settings.TWO_PI * Settings.inc;
     }
 
     private float FM()
