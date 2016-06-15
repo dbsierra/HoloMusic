@@ -142,14 +142,14 @@ public class Sequencer : MonoBehaviour {
 
             }
         }
-        Debug.Log("Sequencer done initializing");
+
 
         for (int row = 0; row < 16; row++)
         {
             foreach( MIDINote n in matrix[row].midiNotes )
             {
 
-                Debug.Log( n.midi );
+              //  Debug.Log( n.midi );
             }
         }
     }
@@ -199,7 +199,7 @@ public class Sequencer : MonoBehaviour {
     public void OnStep(byte s)
     {
         step = s;
-        Debug.Log(s);
+        //Debug.Log(s);
         //send note over
         foreach( MIDINote n in GetRow() )
         {

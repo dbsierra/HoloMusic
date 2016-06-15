@@ -5,6 +5,7 @@ using MusicUtilities;
 
 namespace MusicDevice
 {
+    
 
     /// <summary>
     /// Manages voices, routing the proper note to the corresponding voice instance, and mixes them all down to one final sample
@@ -14,6 +15,7 @@ namespace MusicDevice
         private byte voiceCount;
         public byte VoiceCount { get { return voiceCount; } }
         private LinkedList<Voice> voices;
+        private Dictionary<MIDINote, Voice> noteMapper;
 
         public VoiceManager(byte vcount)
         {
@@ -22,19 +24,32 @@ namespace MusicDevice
 
         public void NoteOn(MIDINote n)
         {
-            GetNextVoice().NoteOn(n);
+            Voice v = GetNextVoice();
+            noteMapper.Add(n, v);
+            v.NoteOn(n);
+            n.voice = v;
         }
 
         public void NoteOff(MIDINote n)
         {
-            //FinishVoice()
+            Voice v = n.voice;
+            v.NoteOff();
         }
 
         public float NextSample()
         {
-            return GetNextVoice().NextSample();
+            float s = 0;
+            foreach(Voice v in voices)
+            {
+                s += v.NextSample();
+            }
+            return s;
         }
 
+        public void AddVoice(Voice v)
+        {
+            voices.AddLast(v);
+        }
         private Voice GetNextVoice()
         {
             Voice v = voices.First.Value;

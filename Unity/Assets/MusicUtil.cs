@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using MusicDevice;
 
 namespace MusicUtilities
 {
@@ -13,6 +14,7 @@ namespace MusicUtilities
         public byte duration;
         public byte velocity;
         public float frequency;
+        public Voice voice;
 
         public MIDINote() { }
 
@@ -20,6 +22,12 @@ namespace MusicUtilities
         {
             this.midi = midi;
             this.duration = duration;
+            this.velocity = velocity;
+            this.frequency = Settings.getFreq(midi);
+        }
+        public MIDINote(byte midi, byte velocity)
+        {
+            this.midi = midi;
             this.velocity = velocity;
             this.frequency = Settings.getFreq(midi);
         }

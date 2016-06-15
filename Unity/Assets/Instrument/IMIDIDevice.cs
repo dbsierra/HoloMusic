@@ -2,7 +2,7 @@
 using System.Collections;
 using MusicUtilities;
 
-interface IMIDIDevice {
+public interface IMIDIDevice {
 
     void NoteOn(MIDINote n);
     void NoteOff(MIDINote n);
