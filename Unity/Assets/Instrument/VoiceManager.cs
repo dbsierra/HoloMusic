@@ -16,18 +16,23 @@ namespace MusicDevice
         public byte VoiceCount { get { return voiceCount; } }
         private LinkedList<Voice> voices;
         private Dictionary<MIDINote, Voice> noteMapper;
+        byte currentActiveVoices;
 
         public VoiceManager(byte vcount)
         {
             voiceCount = vcount;
+            voices = new LinkedList<Voice>();
+
         }
 
         public void NoteOn(MIDINote n)
         {
             Voice v = GetNextVoice();
-            noteMapper.Add(n, v);
             v.NoteOn(n);
             n.voice = v;
+            
+            if (currentActiveVoices < voiceCount)
+                currentActiveVoices++;
         }
 
         public void NoteOff(MIDINote n)
@@ -38,12 +43,16 @@ namespace MusicDevice
 
         public float NextSample()
         {
+            
             float s = 0;
             foreach(Voice v in voices)
             {
                 s += v.NextSample();
             }
-            return s;
+            if (currentActiveVoices > 0)
+                return s * 1 / currentActiveVoices;
+            else
+                return s;
         }
 
         public void AddVoice(Voice v)
@@ -57,10 +66,12 @@ namespace MusicDevice
             voices.AddLast(v);
             return v;
         }
-        private void FinishVoice(Voice v)
+        public void FinishVoice(Voice v)
         {
+            Debug.Log("here");
             voices.Remove(v);
             voices.AddLast(v);
+            currentActiveVoices--;
         }
     }
 

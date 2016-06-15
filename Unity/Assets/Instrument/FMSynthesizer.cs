@@ -16,21 +16,23 @@ public class FMSynthesizer : Instrument {
             voiceManager.AddVoice(new FMVoice(voiceManager));
         }
     }
+
+    /// <summary>
+    /// Allocate this note to a voice for this instrument
+    /// </summary>
+    /// <param name="n">note</param>
 	public override void NoteOn(MIDINote n)
     {
         voiceManager.NoteOn(n);
     }
+
     public override void NoteOff(MIDINote n)
     {
         voiceManager.NoteOff(n);
     }
     public override float NextSample()
     {
-        float o = 0;
-
-
-
-        return o;
+        return voiceManager.NextSample();
     }
 
 }
@@ -42,25 +44,37 @@ public class FMVoice : Voice
     VoiceManager parentManager;
     public string nae { get; set; }
     float t;
+    private bool processing;
+    MIDINote n;
 
     public FMVoice(VoiceManager v)
     {
         parentManager = v;
        // this.instrument = instrument;
     }
-    public  void NoteOn(MIDINote n)
+    public void NoteOn(MIDINote n)
     {
+        this.n = n;
+        processing = true;
     }
-    public  void NoteOff()
+    public void NoteOff()
     {
+        Done();
     }
     public  float NextSample()
     {
-        t += Settings.inc;
-        return Mathf.Sin(Mathf.PI * 2 * 220);
+        float o = 0;
+        if (processing)
+        {
+            t += Settings.inc;
+            o = Mathf.Sin(Mathf.PI * 2 * n.frequency * t);
+            //Debug.Log("hup: " + o);
+        }
+        return o;
     }
     public void Done()
     {
-
+        processing = false;
+        parentManager.FinishVoice(this);
     }
 }

@@ -15,23 +15,10 @@ public class MasterClock : MonoBehaviour {
     byte length = 16;  //in number of beats
     uint beatLength_s;
 
-    Dictionary<MIDINote, Voice> test = new Dictionary<MIDINote, Voice>();
-
     public Sequencer[] sequencers;
 
 	void Start () {
         Instance = this;
-
-        MIDINote n1 = new MIDINote();
-        MIDINote n2 = new MIDINote();
-        FMVoice v1 = new FMVoice("hi");
-        FMVoice v2 = new FMVoice("bye");
-
-        test[n1] = v1;
-        test[n2] = v2;
-
-        Debug.Log(test[n1].nae);
-        Debug.Log(test[n2].nae);
 
         synth = new FMSynthesizer();
         
@@ -39,23 +26,32 @@ public class MasterClock : MonoBehaviour {
     }
 
     FMSynthesizer synth;
+    MIDINote n;
+    bool on;
     void Update()
     {
-        if( Input.GetKeyDown(KeyCode.A) )
-        {
-            MIDINote n = new MIDINote(48, 1);
-        }
-        if (Input.GetKeyUp(KeyCode.A))
-        {
 
-        }
     }
+
 
     void OnAudioFilterRead(float[] data, int channels)
     {
         //for each sample of this block of audio data
         for (int i = 0; i < data.Length; i = i + channels)
         {
+            if (synth != null && on)
+            {
+                float s = synth.NextSample();
+
+                data[i] = .5f * s;
+                if (channels == 2)
+                {
+                    data[i + 1] = data[i];
+                }
+
+                    
+            }
+            /*
             MyTime += Settings.inc;
             if ( sample >= beatLength_s )
             {
@@ -69,7 +65,7 @@ public class MasterClock : MonoBehaviour {
                     step = 0;
             }
             sample += 1;
-
+            */
 
         }
 
