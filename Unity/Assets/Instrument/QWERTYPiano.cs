@@ -31,69 +31,67 @@ public class QWERTYPiano : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
 	    if( Input.GetKeyDown(KeyCode.A) )
-        {
             synth.NoteOn(keyMap[KeyCode.A]);
-        }
-        else if (Input.GetKeyUp(KeyCode.A))
-        {
+        if (Input.GetKeyUp(KeyCode.A))       
             synth.NoteOff(keyMap[KeyCode.A]);
-        }
 
         if (Input.GetKeyDown(KeyCode.W))
             synth.NoteOn(keyMap[KeyCode.W]);
-        else if (Input.GetKeyUp(KeyCode.W))
+        if (Input.GetKeyUp(KeyCode.W))
             synth.NoteOff(keyMap[KeyCode.W]);
         
         if (Input.GetKeyDown(KeyCode.S))
             synth.NoteOn(keyMap[KeyCode.S]);
-        else if (Input.GetKeyUp(KeyCode.S))
+        if (Input.GetKeyUp(KeyCode.S))
             synth.NoteOff(keyMap[KeyCode.S]);
 
         if (Input.GetKeyDown(KeyCode.E))
             synth.NoteOn(keyMap[KeyCode.E]);
-        else if (Input.GetKeyUp(KeyCode.E))
+        if (Input.GetKeyUp(KeyCode.E))
             synth.NoteOff(keyMap[KeyCode.E]);
 
         if (Input.GetKeyDown(KeyCode.D))
             synth.NoteOn(keyMap[KeyCode.D]);
-        else if (Input.GetKeyUp(KeyCode.D))
+        if (Input.GetKeyUp(KeyCode.D))
             synth.NoteOff(keyMap[KeyCode.D]);
 
         if (Input.GetKeyDown(KeyCode.F))
             synth.NoteOn(keyMap[KeyCode.F]);
-        else if (Input.GetKeyUp(KeyCode.F))
+        if (Input.GetKeyUp(KeyCode.F))
             synth.NoteOff(keyMap[KeyCode.F]);
 
         if (Input.GetKeyDown(KeyCode.T))
             synth.NoteOn(keyMap[KeyCode.T]);
-        else if (Input.GetKeyUp(KeyCode.T))
+        if (Input.GetKeyUp(KeyCode.T))
             synth.NoteOff(keyMap[KeyCode.T]);
 
         if (Input.GetKeyDown(KeyCode.G))
             synth.NoteOn(keyMap[KeyCode.G]);
-        else if (Input.GetKeyUp(KeyCode.G))
+        if (Input.GetKeyUp(KeyCode.G))
             synth.NoteOff(keyMap[KeyCode.G]);
 
         if (Input.GetKeyDown(KeyCode.Y))
             synth.NoteOn(keyMap[KeyCode.Y]);
-        else if (Input.GetKeyUp(KeyCode.Y))
+        if (Input.GetKeyUp(KeyCode.Y))
             synth.NoteOff(keyMap[KeyCode.Y]);
 
         if (Input.GetKeyDown(KeyCode.H))
             synth.NoteOn(keyMap[KeyCode.H]);
-        else if (Input.GetKeyUp(KeyCode.H))
+        if (Input.GetKeyUp(KeyCode.H))
             synth.NoteOff(keyMap[KeyCode.H]);
 
         if (Input.GetKeyDown(KeyCode.U))
             synth.NoteOn(keyMap[KeyCode.U]);
-        else if (Input.GetKeyUp(KeyCode.U))
+        if (Input.GetKeyUp(KeyCode.U))
             synth.NoteOff(keyMap[KeyCode.U]);
 
         if (Input.GetKeyDown(KeyCode.J))
             synth.NoteOn(keyMap[KeyCode.J]);
-        else if (Input.GetKeyUp(KeyCode.J))
+        if (Input.GetKeyUp(KeyCode.J))
             synth.NoteOff(keyMap[KeyCode.J]);
+
     }
 
     void OnAudioFilterRead(float[] data, int channels)
@@ -101,6 +99,7 @@ public class QWERTYPiano : MonoBehaviour {
         //for each sample of this block of audio data
         for (int i = 0; i < data.Length; i = i + channels)
         {
+            
             if (synth != null )
             {
                 float s = synth.NextSample();

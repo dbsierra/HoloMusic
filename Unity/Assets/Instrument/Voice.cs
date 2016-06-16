@@ -11,7 +11,9 @@ namespace MusicDevice
     /// </summary>
     public interface Voice
     {
-        string nae { get; set; }
+        VoiceManager parentManager { get; set; }
+        string Name { get; set; }
+        float Amplitude { get; set; }
         void NoteOn(MIDINote n);
         void NoteOff();
         void Done();

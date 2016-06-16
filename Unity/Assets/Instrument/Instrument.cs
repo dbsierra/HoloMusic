@@ -14,10 +14,7 @@ namespace MusicDevice
         public byte VoiceCount;
 
         private VoiceManager vm;
-        public Instrument()
-        {
-            vm = new VoiceManager(VoiceCount);
-        }
+
         public abstract void NoteOn(MIDINote n);
         public abstract void NoteOff(MIDINote n);
         public abstract float NextSample();
