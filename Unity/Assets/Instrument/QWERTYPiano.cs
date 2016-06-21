@@ -5,7 +5,7 @@ using MusicUtilities;
 
 public class QWERTYPiano : MonoBehaviour {
 
-    public int Octave = 4;
+    public int Octave = 2;
     Dictionary<KeyCode, MIDINote> keyMap = new Dictionary<KeyCode, MIDINote>();
     FMSynthesizer synth;
     bool playing;
@@ -13,18 +13,20 @@ public class QWERTYPiano : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        keyMap[KeyCode.A] = new MIDINote(48, 1);
-        keyMap[KeyCode.W] = new MIDINote(49, 1);
-        keyMap[KeyCode.S] = new MIDINote(50, 1);
-        keyMap[KeyCode.E] = new MIDINote(51, 1);
-        keyMap[KeyCode.D] = new MIDINote(52, 1);
-        keyMap[KeyCode.F] = new MIDINote(53, 1);
-        keyMap[KeyCode.T] = new MIDINote(54, 1);
-        keyMap[KeyCode.G] = new MIDINote(55, 1);
-        keyMap[KeyCode.Y] = new MIDINote(56, 1);
-        keyMap[KeyCode.H] = new MIDINote(57, 1);
-        keyMap[KeyCode.U] = new MIDINote(58, 1);
-        keyMap[KeyCode.J] = new MIDINote(59, 1);
+
+        
+        keyMap[KeyCode.A] = new MIDINote(48 - 12, 1);
+        keyMap[KeyCode.W] = new MIDINote(49 - 12, 1);
+        keyMap[KeyCode.S] = new MIDINote(50 - 12, 1);
+        keyMap[KeyCode.E] = new MIDINote(51 - 12, 1);
+        keyMap[KeyCode.D] = new MIDINote(52 - 12, 1);
+        keyMap[KeyCode.F] = new MIDINote(53 - 12, 1);
+        keyMap[KeyCode.T] = new MIDINote(54 - 12, 1);
+        keyMap[KeyCode.G] = new MIDINote(55 - 12, 1);
+        keyMap[KeyCode.Y] = new MIDINote(56 - 12, 1);
+        keyMap[KeyCode.H] = new MIDINote(57 - 12, 1);
+        keyMap[KeyCode.U] = new MIDINote(58 - 12, 1);
+        keyMap[KeyCode.J] = new MIDINote(59 - 12, 1);
 
         synth = new FMSynthesizer();
     }

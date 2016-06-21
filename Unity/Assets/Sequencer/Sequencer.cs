@@ -3,19 +3,49 @@ using System.Collections;
 using System.Collections.Generic;
 using MusicUtilities;
 
-/// <summary>
-/// The Sequencer will hold a 16x12 array of bools.
-/// 12 = number of notes to an octave.
-/// 16 = 4 bars of 4 beats each.
-/// 
-/// For each beat, a synthesizer will look up the corresponding array of notes
-/// and see which notes in that array are turned on.
-/// It will then play each of those notes.
-/// 
-/// TODO:
-/// -Implement MIDI velocity for each note
-/// -Everytime note is pressed or depressed on a row of sequencer, update the note information for that array
-/// </summary>
+/*
+public class SqnRow
+{
+    public Dictionary<string, MIDINote> map;
+    public SqnRow()
+    {
+        map = new Dictionary<string, MIDINote>();
+    }
+}
+
+public class Sequencer : MonoBehaviour
+{
+    public byte octave;
+
+    private SqnRow[] sqnMatrix;
+
+    private void SequencerDebugValues()
+    {
+        AddNote(0, "C" + octave, 2, 1);
+        AddNote(4, "D" + octave, 2, 1);
+        AddNote(8, "E" + octave, 2, 1);
+        AddNote(12, "F" + octave, 2, 1);
+    }
+    public void AddNote(byte beat, string note, byte length, byte velocity)
+    {
+        MIDINote n = new MIDINote(Settings.getMIDI(note), length, velocity);
+        sqnMatrix[beat].map[note] = n;
+    }
+
+    void Start()
+    {
+        
+    }
+    void Update()
+    {
+
+    }
+
+}
+
+    */
+
+
 public class Sequencer : MonoBehaviour {
     
 	string[] pianoNotes;

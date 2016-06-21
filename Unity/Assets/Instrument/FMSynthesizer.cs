@@ -17,7 +17,7 @@ public class FMSynthesizer : Instrument {
             voices[i] = new FMVoice("voice"+i);
         }
         voiceManager = new VoiceManager(voices);
-
+        
     }
 
     /// <summary>
@@ -54,14 +54,28 @@ public class FMVoice : Voice
     public bool Processing { get { return processing; } }
     MIDINote n;
 
+    private float TWO_PI = 6.283185307f;
+
+    private float[] table;
+    private int index;
+
     public FMVoice(string name)
     {
         eg = new EnvelopeGenerator(name);
         eg.Attack = .01f;
         eg.Decay = .2f;
         eg.Sustain = .5f;
-        eg.Release = .3f;
+        eg.Release = .8f;
         Name = name;
+
+        table = new float[Settings.SampleRate / 220];
+
+        for( int i=0; i< table.Length; i++ )
+        {
+            table[i] = Mathf.Sin(TWO_PI * ((float)i / (float)(table.Length - 1))) * .8f;// + (Mathf.Pow( UnityEngine.Random.Range(0,1), 5 )*2-1);
+            //Debug.Log(table[i]);
+        }
+        index = 0;
     }
     public void NoteOn(MIDINote n)
     {
@@ -74,6 +88,8 @@ public class FMVoice : Voice
         eg.GateClose();
         //Done();
     }
+
+
     public  float NextSample()
     {
         float o = 0;
@@ -82,7 +98,23 @@ public class FMVoice : Voice
             t += Settings.inc;
 
             Amplitude = eg.GetSample();
-            o = Mathf.Sin(Mathf.PI * 2 * n.frequency * t) * Amplitude;
+
+            /*
+            float m3 = Mathf.Sin(TWO_PI * n.frequency * 7.5f * t) * 1f;
+            float m2 = Mathf.Sin(TWO_PI * n.frequency * 4.5f * t + m3) * .2f; 
+            float m1 = Mathf.Sin(TWO_PI * n.frequency * 2f * t + m2) * .5f; 
+            o = Mathf.Sin(TWO_PI * n.frequency * t + m1   ) * Amplitude;
+            */
+
+            float m3 = Mathf.Sin(TWO_PI * n.frequency * 7.5f * t) * .3f;
+            float m2 = Mathf.Sin(TWO_PI * n.frequency * 4f * t + m3) * .2f;
+            float m1 = Mathf.Sin(TWO_PI * n.frequency * 2f * t + m2) * .5f;
+            o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Amplitude;
+
+            //o = table[index++] * Amplitude;
+           // if (index >= table.Length)
+            //    index = 0;
+
             //Debug.Log("hup: " + o);
 
             if (eg.CurState == EnvelopeGenerator.State.off)
