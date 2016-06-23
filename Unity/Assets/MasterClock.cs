@@ -39,19 +39,6 @@ public class MasterClock : MonoBehaviour {
         //for each sample of this block of audio data
         for (int i = 0; i < data.Length; i = i + channels)
         {
-            if (synth != null && on)
-            {
-                float s = synth.NextSample();
-
-                data[i] = .5f * s;
-                if (channels == 2)
-                {
-                    data[i + 1] = data[i];
-                }
-
-                    
-            }
-            /*
             MyTime += Settings.inc;
             if ( sample >= beatLength_s )
             {
@@ -65,11 +52,9 @@ public class MasterClock : MonoBehaviour {
                     step = 0;
             }
             sample += 1;
-            */
-
         }
-
-
     }
+
+
 
 }

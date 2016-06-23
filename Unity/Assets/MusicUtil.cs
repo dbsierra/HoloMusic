@@ -14,6 +14,7 @@ namespace MusicUtilities
         public byte duration;
         public byte velocity;
         public float frequency;
+        public bool noteOn;
         public Voice voice;
 
         public MIDINote() { }
@@ -68,7 +69,7 @@ namespace MusicUtilities
         {
             //hard coded BPM for now
             BPM = 60;
-            BeatLength = 60.0f / ((float)BPM * 4.0f);
+            BeatLength = 60.0f / ((float)BPM * 16.0f);
 
             SampleRate = AudioSettings.outputSampleRate;
             inc = 1.0f / AudioSettings.outputSampleRate;
