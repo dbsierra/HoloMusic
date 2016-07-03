@@ -5,6 +5,17 @@ using MusicDevice;
 
 namespace MusicUtilities
 {
+
+    public struct NoteEvent
+    {
+        public MIDINote note;
+        public bool noteOn;
+        public NoteEvent(MIDINote n, bool nOn)
+        {
+            note = n;
+            noteOn = nOn;
+        }
+    }
     /// <summary>
     /// Represents a single midi note
     /// </summary>
@@ -19,12 +30,13 @@ namespace MusicUtilities
 
         public MIDINote() { }
 
-        public MIDINote(byte midi, byte duration, byte velocity)
+        public MIDINote(byte midi, byte duration, byte velocity, bool noteOn=true)
         {
             this.midi = midi;
             this.duration = duration;
             this.velocity = velocity;
             this.frequency = Settings.getFreq(midi);
+            this.noteOn = noteOn;
         }
         public MIDINote(byte midi, byte velocity)
         {

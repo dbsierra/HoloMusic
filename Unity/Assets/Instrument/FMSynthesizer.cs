@@ -47,7 +47,7 @@ public class FMVoice : Voice
 {
     EnvelopeGenerator eg;
     public VoiceManager parentManager { get; set; }
-    public float Amplitude { get; set; }
+    public float Gain { get; set; }
     public string Name { get; set; }
     float t;
     private bool processing;
@@ -97,7 +97,7 @@ public class FMVoice : Voice
         {
             t += Settings.inc;
 
-            Amplitude = eg.GetSample();
+            Gain = eg.GetSample();
 
             /*
             float m3 = Mathf.Sin(TWO_PI * n.frequency * 7.5f * t) * 1f;
@@ -109,7 +109,7 @@ public class FMVoice : Voice
             float m3 = Mathf.Sin(TWO_PI * n.frequency * 7.5f * t) * .3f;
             float m2 = Mathf.Sin(TWO_PI * n.frequency * 4f * t + m3) * .2f;
             float m1 = Mathf.Sin(TWO_PI * n.frequency * 2f * t + m2) * .5f;
-            o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Amplitude;
+            o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Gain;
 
             //o = table[index++] * Amplitude;
            // if (index >= table.Length)

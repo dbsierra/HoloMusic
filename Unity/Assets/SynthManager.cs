@@ -39,8 +39,6 @@ public class SynthManager : MonoBehaviour
     private int oldStep = -1;
     private int step = 0;
 
-
-
     private float voiceAttenuator;
     private FMSynthContainer[] voices;
     private byte overflowCounter;
@@ -72,7 +70,7 @@ public class SynthManager : MonoBehaviour
        
         //find first free voice. If no free voices, assign to index of overflowCounter, and increment overflowCounter, 
         //reset to 0 if it exceeds voices.Length
-        bool found = false;
+        bool found = false;                                 
         for( byte i=0; i< voices.Length; i++ )
         {
             //Debug.Log(voices[i].name + " " + voices[i].Playing + " " + voices.Length);

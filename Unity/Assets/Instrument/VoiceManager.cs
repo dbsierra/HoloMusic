@@ -65,7 +65,7 @@ namespace MusicDevice
             {         
                 s += v.NextSample();
 
-                totalAmp += v.Amplitude;
+                totalAmp += v.Gain;
             }
             if (totalAmp >= 1)
             {
