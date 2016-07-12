@@ -52,6 +52,7 @@ namespace MusicUtilities
 
         public static int BPM;
         public static float BeatLength;
+        public static int BeatLength_s;
         public static int SampleRate;
 
         public static byte MAX_VOICES = 16;
@@ -79,12 +80,16 @@ namespace MusicUtilities
 
         static Settings()
         {
-            //hard coded BPM for now
-            BPM = 60;
-            BeatLength = 60.0f / ((float)BPM * 16.0f);
 
             SampleRate = AudioSettings.outputSampleRate;
             inc = 1.0f / AudioSettings.outputSampleRate;
+
+            //hard coded BPM for now
+            BPM = 60;
+            BeatLength = 60.0f / ((float)BPM * 16.0f);
+            BeatLength_s = (int)(BeatLength * SampleRate);
+
+
 
             notes.Add("C", 0);
             notes.Add("D", 2);

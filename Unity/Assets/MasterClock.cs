@@ -15,7 +15,7 @@ public class MasterClock : MonoBehaviour {
     byte length = 16;  //in number of beats
     uint beatLength_s;
 
-    public Sequencer[] sequencers;
+   // public Sequencer[] sequencers;
 
 	void Start () {
         Instance = this;
@@ -33,7 +33,7 @@ public class MasterClock : MonoBehaviour {
 
     }
 
-
+    /*
     void OnAudioFilterRead(float[] data, int channels)
     {
         //for each sample of this block of audio data
@@ -54,7 +54,7 @@ public class MasterClock : MonoBehaviour {
             sample += 1;
         }
     }
-
+    */
 
 
 }

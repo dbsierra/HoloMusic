@@ -11,7 +11,7 @@ public class FMSynthesizer : Instrument {
     public FMSynthesizer()
     {
         
-        FMVoice[] voices = new FMVoice[8];
+        FMVoice[] voices = new FMVoice[4];
         for( int i=0; i<voices.Length; i++)
         {
             voices[i] = new FMVoice("voice"+i);
@@ -37,7 +37,7 @@ public class FMSynthesizer : Instrument {
     }
     public override float NextSample()
     {
-        return voiceManager.NextSample();
+        return  voiceManager.NextSample();
     }
 
 }
@@ -65,7 +65,7 @@ public class FMVoice : Voice
         eg.Attack = .01f;
         eg.Decay = .2f;
         eg.Sustain = .5f;
-        eg.Release = .8f;
+        eg.Release = .05f;
         Name = name;
 
         table = new float[Settings.SampleRate / 220];
@@ -110,6 +110,8 @@ public class FMVoice : Voice
             float m2 = Mathf.Sin(TWO_PI * n.frequency * 4f * t + m3) * .2f;
             float m1 = Mathf.Sin(TWO_PI * n.frequency * 2f * t + m2) * .5f;
             o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Gain;
+
+            //o = Mathf.Sin(TWO_PI * n.frequency * t) * Gain;
 
             //o = table[index++] * Amplitude;
            // if (index >= table.Length)

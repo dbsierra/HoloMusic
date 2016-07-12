@@ -7,7 +7,7 @@ namespace MusicDevice
     /// <summary>
     /// This is the container for the sound generating part of your instrument. A voice object will take note on and off events
     /// and return to you an audio sample. For polyphonic instruments, this is what gets instanced by the Voice Manager, so only put things in 
-    /// here that you would want on a per-instance basis.
+    /// here that you would want on a per-instance basis. 
     /// </summary>
     public interface Voice
     {
@@ -30,7 +30,8 @@ namespace MusicDevice
         void Done();    
 
         //DSP goes here!
-        float NextSample();  
+        float NextSample();
+
     }
 
 }

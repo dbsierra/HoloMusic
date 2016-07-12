@@ -109,7 +109,7 @@ public class QWERTYPiano : MonoBehaviour {
                 data[i] = .5f * s;
                 if (channels == 2)
                 {
-                    data[i + 1] = data[i];
+                     data[i + 1] = data[i];
                 }
             }
 
