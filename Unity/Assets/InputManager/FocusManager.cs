@@ -29,28 +29,25 @@ public class FocusManager : MonoBehaviour {
         get { return gazeDirection; }
     }
 
+    public static FocusManager Instance;
+        
+    private GestureRecognizer recognizer;
 
-    #region gesture variables
-    GestureRecognizer recognizer;
+    private bool VHandClickStarted;
+    private bool VHandHolding;
+    private float VHandHoldTime = .5f;
+    private float startTime;
 
-    struct CursorInfo
-    {
-        public Material cursorMat;
-        public Color idleColor;
-        public Color selectColor;
-    }
-    CursorInfo cursorInfo;
-    #endregion
-
-
+    private Cursor cursorInfo;
+      
     // Use this for initialization
     void Start () {
 
+        Instance = this;
+
         focus = oldFocus = null;
 
-        cursorInfo.cursorMat = GameObject.Find("Cursor geo").GetComponent<Renderer>().material;
-        cursorInfo.idleColor = new Color(.646f, .646f, .646f);
-        cursorInfo.selectColor = new Color(0, .588f, 1);
+        cursorInfo = Cursor.Instance;
 
         if (Camera.main == null)
         {
@@ -62,20 +59,55 @@ public class FocusManager : MonoBehaviour {
 #if NETFX_CORE
         recognizer = new GestureRecognizer();
         recognizer.TappedEvent += FingerTap;
+        recognizer.HoldStartedEvent += HoldStart;
+        recognizer.HoldCompletedEvent += HoldComplete;
         recognizer.StartCapturingGestures();
 #endif
+
     }
 
-
-
-    private void FingerTap( InteractionSourceKind source, int tapCount, Ray headRay)
+    private void FingerTap( InteractionSourceKind source, int tapCount, Ray headRay )
     {
         TapEvent();
     }
+    private void HoldStart( InteractionSourceKind source, Ray headRay )
+    {
+        HoldStartEvent();
+    }
+    private void HoldComplete( InteractionSourceKind source, Ray headRay )
+    {
+        HoldCompleteEvent();
+    }
+    private void HoldStartEvent()
+    {
+        cursorInfo.CursorMat.SetColor("_Color", cursorInfo.HoldColor);
+        if (focus != null)
+        {
+            InputTarget target = focus.GetComponent<InputTarget>();
 
+            if (target != null)
+            {
+                target.SendMessageHoldStart();
+            }
+        }
+    }
+    private void HoldCompleteEvent()
+    {
+        cursorInfo.CursorMat.SetColor("_Color", cursorInfo.IdleColor);
+        if (focus != null)
+        {
+            InputTarget target = focus.GetComponent<InputTarget>();
+
+            if (target != null)
+            {
+                target.SendMessageHoldComplete();
+            }
+        }
+    }
     private void TapEvent()
     {
-        cursorInfo.cursorMat.SetColor("_Color", cursorInfo.selectColor);
+        
+        cursorInfo.CursorMat.SetColor("_Color", cursorInfo.SelectColor);
         if (focus != null)
         {
             InputTarget target = focus.GetComponent<InputTarget>();
@@ -84,19 +116,17 @@ public class FocusManager : MonoBehaviour {
             {
                 target.SendMessageTap();
             }
+
         }
-#if UNITY_EDITOR
-        cursorInfo.cursorMat.SetColor("_Color", cursorInfo.idleColor);
-#endif
-#if NETFX_CORE
+
         StartCoroutine("AfterTap");
-#endif
+
     }
 
     private IEnumerator AfterTap()
     {
-        yield return new WaitForSeconds(.3f);
-        cursorInfo.cursorMat.SetColor("_Color", cursorInfo.idleColor);
+        yield return new WaitForSeconds(.1f);
+        cursorInfo.CursorMat.SetColor("_Color", cursorInfo.IdleColor);
     }
 
 
@@ -105,14 +135,41 @@ public class FocusManager : MonoBehaviour {
     void Update () {
 
 #if UNITY_EDITOR
+
+        #region virtual hand
+        
         if(Input.GetMouseButtonDown(0) )
         {
-            cursorInfo.cursorMat.SetColor("_Color", cursorInfo.selectColor);
+            
+            startTime = Time.time;
+            VHandClickStarted = true;
         }
         if( Input.GetMouseButtonUp(0) )
         {
-            TapEvent();
+            VHandClickStarted = false;
+            if (!VHandHolding)
+            {
+                TapEvent();
+            }   
+            else
+            {
+                HoldCompleteEvent();
+                VHandHolding = false;
+            }
+                
         }
+
+        if( VHandClickStarted )
+        {
+            if( Time.time - startTime >= VHandHoldTime )
+            {
+                VHandHolding = true;
+                VHandClickStarted = false;
+                HoldStartEvent();
+            }
+        }
+        #endregion
+
 #endif
         headPosition = Camera.main.transform.position;
         gazeDirection = Camera.main.transform.forward;

@@ -19,6 +19,7 @@ public class ManualCameraControl : MonoBehaviour {
 
 	void Update () {
 
+#if UNITY_EDITOR
         if (Input.GetMouseButtonDown(1))
         {
             xStart = Input.mousePosition.x ;
@@ -57,9 +58,9 @@ public class ManualCameraControl : MonoBehaviour {
         {
             transform.Translate(Vector3.right * MoveSensitivity );
         }
+#endif
 
     }
-
 
 
 }
