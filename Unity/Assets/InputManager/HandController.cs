@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.VR.WSA.Input;
 
 /// <summary>
 /// Provide direct access to the world space hand position.
@@ -16,8 +17,28 @@ public class HandController : MonoBehaviour {
 
     bool holoHand;
 
-	// Use this for initialization
-	void Start () {
+    private Vector3 handPosition;
+    public Vector3 HandPosition { get { return handPosition; } }
+
+
+    /// <summary>
+    /// Tracks the hand detected state.
+    /// </summary>
+    public bool HandDetected
+    {
+        get;
+        private set;
+    }
+
+
+    void Awake()
+    {
+       
+    }
+
+
+    // Use this for initialization
+    void Start () {
 #if UNITY_EDITOR
         virtualHand = true;
 #endif
@@ -37,6 +58,13 @@ public class HandController : MonoBehaviour {
         {
             vHandActivated = false;
         }
+
+#if UNITY_EDITOR
+        handPosition = Input.mousePosition;
+#endif
+#if NETFX_CORE
+        //handPosition = 
+#endif
 
     }
 

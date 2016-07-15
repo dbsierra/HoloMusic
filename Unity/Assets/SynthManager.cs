@@ -121,7 +121,7 @@ public class SynthManager : MonoBehaviour
 
          if (recOutput)
          {
-             wavWriter.ConvertAndWrite(data);
+            ;// wavWriter.ConvertAndWrite(data);
          }
     }
 
@@ -143,13 +143,13 @@ public class SynthManager : MonoBehaviour
         {   
             if (recOutput == false)
             {
-				wavWriter.StartWriting("s1.wav");
+                ;// wavWriter.StartWriting("s1.wav");
                 recOutput = true;
             }
             else
             {
                 recOutput = false;
-				wavWriter.WriteHeader();
+                ;// wavWriter.WriteHeader();
                 Debug.Log("rec stop");
             }
         }
