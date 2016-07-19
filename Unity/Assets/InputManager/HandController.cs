@@ -2,6 +2,9 @@
 using System.Collections;
 using UnityEngine.VR.WSA.Input;
 
+using MusicDevice;
+using MusicUtilities;
+
 /// <summary>
 /// Provide direct access to the world space hand position.
 /// If not in the HoloLens, provide an alternate virtual hand via mouse or xbox controller input.
@@ -20,7 +23,6 @@ public class HandController : MonoBehaviour {
     private Vector3 handPosition;
     public Vector3 HandPosition { get { return handPosition; } }
 
-
     /// <summary>
     /// Tracks the hand detected state.
     /// </summary>
@@ -33,8 +35,21 @@ public class HandController : MonoBehaviour {
 
     void Awake()
     {
-       
+        InteractionManager.SourceDetected += InteractionManager_SourceDetected;
+        InteractionManager.SourceLost += InteractionManager_SourceLost;
+        InteractionManager.SourcePressed += InteractionManager_SourcePressed;
+        InteractionManager.SourceReleased += InteractionManager_SourceReleased;
+
     }
+    void OnDestroy()
+    {
+        InteractionManager.SourceDetected -= InteractionManager_SourceDetected;
+        InteractionManager.SourceLost -= InteractionManager_SourceLost;
+        InteractionManager.SourceReleased -= InteractionManager_SourceReleased;
+        InteractionManager.SourcePressed -= InteractionManager_SourcePressed;
+    }
+
+
 
 
     // Use this for initialization
@@ -45,8 +60,11 @@ public class HandController : MonoBehaviour {
 #if NETFX_CORE
         holoHand = true;
 #endif
+
+
     }
-	
+
+
 	// Update is called once per frame
 	void Update () {
 
@@ -57,16 +75,49 @@ public class HandController : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.C))
         {
             vHandActivated = false;
+
         }
 
 #if UNITY_EDITOR
         handPosition = Input.mousePosition;
 #endif
 #if NETFX_CORE
-        //handPosition = 
+      
 #endif
 
     }
+
+
+    private void Test()
+    {
+        this.GetComponent<AudioSource>().Stop();
+        this.GetComponent<AudioSource>().Play();
+    }
+
+    private void InteractionManager_SourceDetected(InteractionSourceState hand)
+    {
+        HandDetected = true;
+        
+    }
+
+    private void InteractionManager_SourceLost(InteractionSourceState hand)
+    {
+        HandDetected = false;
+    }
+
+    private void InteractionManager_SourcePressed(InteractionSourceState hand)
+    {
+        
+    }
+
+    private void InteractionManager_SourceReleased(InteractionSourceState hand)
+    {
+
+    }
+
+
+
+
 
 
 

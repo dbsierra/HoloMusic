@@ -9,13 +9,13 @@ namespace Sequencer
         public class PRoll_Slot : MonoBehaviour
         {
 
-            // Use this for initialization
+           // TextMesh tm;
+
             void Start()
             {
-
+               // tm = GameObject.Find("DebugText").GetComponent<TextMesh>();
             }
 
-            // Update is called once per frame
             void Update()
             {
 
@@ -25,15 +25,33 @@ namespace Sequencer
             {
 
                 //PRoll_NoteDrawer.BeginNoteDraw(transform.position);
-
+                PRoll_NoteDrawer.BeginNoteDraw(transform.position);
             }
 
             public void OnHoldStart()
             {
-                PRoll_NoteDrawer.BeginNoteDraw(transform.position);
+               
                 Debug.Log("HI");
+               // PRoll_NoteDrawer.BeginNoteDraw(transform.position);
+            }
+
+
+            public void OnNavigationStarted( Vector3 relativePosition )
+            {
+                PRoll_NoteDrawer.BeginNoteDraw(transform.position);
+            }
+
+            public void OnNavigationUpdated( Vector3 relativePosition )
+            {
+                PRoll_NoteDrawer.DrawNote(relativePosition.x);
+                //tm.text = relativePosition.x + " " + relativePosition.y + " " + relativePosition.z;
+            }
+            public void OnNavigationCompleted( Vector3 relativePosition )
+            {
+                PRoll_NoteDrawer.EndNoteDraw(relativePosition);
             }
         }
+
 
 
     }

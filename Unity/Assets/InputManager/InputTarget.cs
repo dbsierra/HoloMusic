@@ -9,33 +9,40 @@ public class InputTarget : MonoBehaviour {
 	}
 	
 	
-    public void SendMessageTap()
-    {
-       // Debug.Log("tap");
-        gameObject.SendMessage("OnTap", SendMessageOptions.DontRequireReceiver);
-    }
+    public void SendMessage_Tap(){ gameObject.SendMessage("OnTap", SendMessageOptions.DontRequireReceiver); }
 
-    public void SendMessageHoldStart()
+    public void SendMessage_HoldStart()
     {
-        // Debug.Log("hold start");
         gameObject.SendMessage("OnHoldStart", SendMessageOptions.DontRequireReceiver);
     }
 
-    public void SendMessageHoldComplete()
+    public void SendMessage_HoldComplete()
     {
-        // Debug.Log("hold complete");
         gameObject.SendMessage("OnHoldComplete", SendMessageOptions.DontRequireReceiver);
     }
     
-    public void SendMessageGazeEnter()
+    public void SendMessage_GazeEnter()
     {
-       // Debug.Log("gaze enter");
         gameObject.SendMessage("OnGazeEnter", SendMessageOptions.DontRequireReceiver);
     }
 
-    public void SendMessageGazeExit()
+    public void SendMessage_GazeExit()
     {
-       // Debug.Log("gaze exit");
         gameObject.SendMessage("OnGazeExit", SendMessageOptions.DontRequireReceiver);
     }
+
+    public void SendMessage_NavigationStarted(Vector3 relativePosition)
+    {
+        gameObject.SendMessage("OnNavigationStarted", relativePosition, SendMessageOptions.DontRequireReceiver);
+    }
+
+    public void SendMessage_NavigationUpdated(Vector3 relativePosition)
+    {
+        gameObject.SendMessage("OnNavigationUpdated", relativePosition, SendMessageOptions.DontRequireReceiver);
+    }
+    public void SendMessage_NavigationCompleted(Vector3 relativePosition)
+    {
+        gameObject.SendMessage("OnNavigationCompleted", relativePosition, SendMessageOptions.DontRequireReceiver);
+    }
+
 }

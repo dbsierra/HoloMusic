@@ -10,6 +10,7 @@ public class FocusManager : MonoBehaviour {
 
     private GameObject oldFocus;
     private GameObject focus;
+    private GameObject focusCache;
     public GameObject Focus
     { 
         get { return focus; }
@@ -35,7 +36,8 @@ public class FocusManager : MonoBehaviour {
 
     private bool VHandClickStarted;
     private bool VHandHolding;
-    private float VHandHoldTime = .5f;
+    private Vector3 VHandStartPos;
+    private float VHandHoldTime = .2f;
     private float startTime;
 
     private Cursor cursorInfo;
@@ -55,52 +57,121 @@ public class FocusManager : MonoBehaviour {
             GameObject.Destroy(this);
             return;
         }
-
 #if NETFX_CORE
         recognizer = new GestureRecognizer();
-        recognizer.TappedEvent += FingerTap;
-        recognizer.HoldStartedEvent += HoldStart;
-        recognizer.HoldCompletedEvent += HoldComplete;
+        recognizer.TappedEvent += Recognizer_FingerTap;
+        recognizer.HoldStartedEvent += Recognizer_HoldStart;
+        recognizer.HoldCompletedEvent += Recognizer_HoldComplete;
+        recognizer.NavigationStartedEvent += Recognizer_NavigationStarted;
+        recognizer.NavigationUpdatedEvent += Recognizer_NavigationUpdated;
+        recognizer.NavigationCompletedEvent += Recognizer_NavigationCompleted;
         recognizer.StartCapturingGestures();
 #endif
 
     }
-
-    private void FingerTap( InteractionSourceKind source, int tapCount, Ray headRay )
+      
+    private void Recognizer_FingerTap( InteractionSourceKind source, int tapCount, Ray headRay )
     {
         TapEvent();
     }
-    private void HoldStart( InteractionSourceKind source, Ray headRay )
+    private void Recognizer_HoldStart( InteractionSourceKind source, Ray headRay )
     {
         HoldStartEvent();
     }
-    private void HoldComplete( InteractionSourceKind source, Ray headRay )
+    private void Recognizer_HoldComplete( InteractionSourceKind source, Ray headRay )
     {
         HoldCompleteEvent();
     }
+    private void Recognizer_NavigationStarted(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+    {
+        NavigationStartedEvent(relativePosition);
+    }
+    private void Recognizer_NavigationUpdated(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+    {
+        NavigationUpdatedEvent(relativePosition);
+    }
+    private void Recognizer_NavigationCompleted(InteractionSourceKind source, Vector3 relativePosition, Ray ray)
+    {
+        NavigationCompletedEvent(relativePosition);
+    }
+
+
+    private void NavigationStartedEvent(Vector3 relativePosition)
+    {
+        if (focus != null)
+        {
+            focusCache = focus;
+
+            #if UNITY_EDITOR
+                VHandStartPos = Input.mousePosition;
+                relativePosition = VHandStartPos;
+            #endif
+
+            cursorInfo.CursorMat.SetColor("_Color", cursorInfo.HoldColor);
+            InputTarget target = focus.GetComponent<InputTarget>();
+
+            if (target != null)
+            {
+                target.SendMessage_NavigationStarted(relativePosition);
+            }
+        }
+    }
+    /// <summary>
+    /// User click+hold+move
+    /// </summary>
+    /// <param name="relativePosition"> relative offset position of hand in normalized units (within a 1m cube). Where you click start is the origin of the 1m cube boundaries.</param>
+    private void NavigationUpdatedEvent(Vector3 relativePosition)
+    {
+
+#if UNITY_EDITOR
+
+        relativePosition = relativePosition / 200f;
+#endif
+
+        InputTarget target = focusCache.GetComponent<InputTarget>();
+
+        if (target != null)
+        {
+            target.SendMessage_NavigationUpdated(relativePosition);
+        }
+        
+    }
+    private void NavigationCompletedEvent(Vector3 relativePosition)
+    {
+        cursorInfo.CursorMat.SetColor("_Color", cursorInfo.IdleColor);
+
+        InputTarget target = focusCache.GetComponent<InputTarget>();
+
+        if (target != null)
+        {
+            target.SendMessage_NavigationCompleted(relativePosition);
+        }
+
+        focusCache = null;
+    }
     private void HoldStartEvent()
     {
-        cursorInfo.CursorMat.SetColor("_Color", cursorInfo.HoldColor);
+        
         if (focus != null)
         {
             InputTarget target = focus.GetComponent<InputTarget>();
 
             if (target != null)
             {
-                target.SendMessageHoldStart();
+                target.SendMessage_HoldStart();
             }
         }
     }
     private void HoldCompleteEvent()
     {
-        cursorInfo.CursorMat.SetColor("_Color", cursorInfo.IdleColor);
+        
         if (focus != null)
         {
             InputTarget target = focus.GetComponent<InputTarget>();
 
             if (target != null)
             {
-                target.SendMessageHoldComplete();
+                target.SendMessage_HoldComplete();
             }
         }
     }
@@ -114,7 +185,7 @@ public class FocusManager : MonoBehaviour {
 
             if (target != null)
             {
-                target.SendMessageTap();
+                target.SendMessage_Tap();
             }
 
         }
@@ -122,6 +193,7 @@ public class FocusManager : MonoBehaviour {
         StartCoroutine("AfterTap");
 
     }
+
 
     private IEnumerator AfterTap()
     {
@@ -136,8 +208,7 @@ public class FocusManager : MonoBehaviour {
 
 #if UNITY_EDITOR
 
-        #region virtual hand
-        
+#region virtual hand
         if(Input.GetMouseButtonDown(0) )
         {
             
@@ -153,10 +224,10 @@ public class FocusManager : MonoBehaviour {
             }   
             else
             {
-                HoldCompleteEvent();
+                //HoldCompleteEvent();
+                NavigationCompletedEvent(Input.mousePosition);
                 VHandHolding = false;
             }
-                
         }
 
         if( VHandClickStarted )
@@ -165,10 +236,15 @@ public class FocusManager : MonoBehaviour {
             {
                 VHandHolding = true;
                 VHandClickStarted = false;
-                HoldStartEvent();
+                NavigationStartedEvent(Input.mousePosition);
             }
         }
-        #endregion
+
+        if( VHandHolding )
+        {
+            NavigationUpdatedEvent(Input.mousePosition - VHandStartPos);   
+        }
+#endregion
 
 #endif
         headPosition = Camera.main.transform.position;
@@ -197,7 +273,7 @@ public class FocusManager : MonoBehaviour {
                 //Is this object targetable?
                 if( target != null )
                 {
-                    target.SendMessageGazeEnter();
+                    target.SendMessage_GazeEnter();
                 }
             }
 
@@ -209,7 +285,7 @@ public class FocusManager : MonoBehaviour {
                 //targetable?
                 if (target != null)
                 {
-                    target.SendMessageGazeExit();
+                    target.SendMessage_GazeExit();
                 }
             }
 

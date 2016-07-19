@@ -68,7 +68,7 @@ namespace Sequencer
 
                         float s = instrument.NextSample();
 
-                        data[i] = .5f * s;
+                        data[i] = .1f * s;
                         if (channels == 2)
                         {
                             data[i + 1] = data[i];
