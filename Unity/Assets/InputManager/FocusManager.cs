@@ -43,7 +43,8 @@ public class FocusManager : MonoBehaviour {
     private Cursor cursorInfo;
       
     // Use this for initialization
-    void Start () {
+    void Start ()
+    {
 
         Instance = this;
 

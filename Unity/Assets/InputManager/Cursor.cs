@@ -5,7 +5,6 @@ public class Cursor : MonoBehaviour {
 
     public Vector3 DefaultPos;
 
-
     private Material cursorMat;
     public Material CursorMat { get { return cursorMat; } }
 
@@ -19,7 +18,6 @@ public class Cursor : MonoBehaviour {
     public Color HoldColor { get { return holdColor;  } }
     
 
-
     public static Cursor Instance;
 
     // Use this for initialization
@@ -31,17 +29,15 @@ public class Cursor : MonoBehaviour {
         holdColor = new Color(1, .588f, 0);
     }
 	
-	// Update is called once per frame
 	void Update () {
 
         if (FocusManager.Instance.Focus)
         {
             transform.position = FocusManager.Instance.HitInfo.point;
-            DefaultPos.z = transform.position.z;
         }
 
+        //angular scaling
         float d = 1.1f*Vector3.Distance( FocusManager.Instance.transform.position, transform.position );
-
         transform.localScale = new Vector3( d, d, d);
 
     }

@@ -9,7 +9,10 @@ namespace Sequencer
         public class PRoll_Slot : MonoBehaviour
         {
 
-           // TextMesh tm;
+            // TextMesh tm;
+
+            public int position;
+            public int pitch;
 
             void Start()
             {
@@ -23,33 +26,25 @@ namespace Sequencer
 
             public void OnTap()
             {
-
-                //PRoll_NoteDrawer.BeginNoteDraw(transform.position);
-                PRoll_NoteDrawer.BeginNoteDraw(transform.position);
-            }
-
-            public void OnHoldStart()
-            {
-               
-                Debug.Log("HI");
-               // PRoll_NoteDrawer.BeginNoteDraw(transform.position);
+                PRoll_NoteDrawer.BeginNoteDraw(transform.position, position, pitch);
+                PRoll_NoteDrawer.EndNoteDraw(transform.position);
             }
 
 
             public void OnNavigationStarted( Vector3 relativePosition )
             {
-                PRoll_NoteDrawer.BeginNoteDraw(transform.position);
+                PRoll_NoteDrawer.BeginNoteDraw(transform.position, position, pitch);
             }
-
             public void OnNavigationUpdated( Vector3 relativePosition )
             {
                 PRoll_NoteDrawer.DrawNote(relativePosition.x);
-                //tm.text = relativePosition.x + " " + relativePosition.y + " " + relativePosition.z;
             }
             public void OnNavigationCompleted( Vector3 relativePosition )
             {
                 PRoll_NoteDrawer.EndNoteDraw(relativePosition);
             }
+
+
         }
 
 
