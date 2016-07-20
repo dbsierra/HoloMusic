@@ -92,7 +92,6 @@ namespace Sequencer.PianoRoll
         //returns duration of note
         public static byte EndNoteDraw( Vector3 endPos )
         {
-            Debug.Log(thresholdRank);
             currentNoteBeingDrawn.localScale = new Vector3( thresholdValues[thresholdRank], 1, 1);
             return (byte)(thresholdRank+1);
         }

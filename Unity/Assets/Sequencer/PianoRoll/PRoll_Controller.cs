@@ -142,8 +142,6 @@ namespace Sequencer.PianoRoll
             //get sample at which we should call noteOff on this note
             uint endSample = globalSample + (uint)(n.duration * Settings.BeatLength_s);
 
-            Debug.Log(globalSample + " " + endSample + " " + n.duration);
-
             //if not already part of the dictionary, add it
             if ( !noteStream.ContainsKey(endSample) )
                 noteStream[endSample] = new List<MIDINote>();
