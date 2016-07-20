@@ -35,6 +35,7 @@ namespace Sequencer.PianoRoll
         //The main data structure containing the note sequence
         //List<NoteEvent>[] matrix2;
         NoteEvent[,] matrix;
+        Dictionary<uint, List<MIDINote>> noteStream = new Dictionary<uint, List<MIDINote>>();
 
         //current step in the sequence
         byte step;
@@ -46,6 +47,7 @@ namespace Sequencer.PianoRoll
 
         //The current sample number
         int sample;
+        uint globalSample;
 
         public GameObject NoteSlot;
         public Transform NoteSlotContainer;
@@ -90,6 +92,10 @@ namespace Sequencer.PianoRoll
             {
                 for (int i = 0; i < data.Length; i = i + channels)
                 {
+
+                    ReleaseNotesFromStream(globalSample);
+
+                    //Sequencer step timer
                     if (sample >= Settings.BeatLength_s)
                     {
                         OnStep();
@@ -98,19 +104,52 @@ namespace Sequencer.PianoRoll
                     else
                         sample++;
 
+                    
 
+                    //obtain our sample for audio playback!
                     float s = instrument.NextSample();
 
+                    //if we are in stereo, duplicate the sample for L+R channels
                     data[i] = .1f * s;
                     if (channels == 2)
                     {
                         data[i + 1] = data[i];
                     }
+
+                    globalSample++;
                 }
             }
 
         }
         #endregion
+
+        private void ReleaseNotesFromStream( uint endSample )
+        {
+            if( noteStream.ContainsKey(endSample) )
+            {
+                foreach(MIDINote n in noteStream[endSample] )
+                {
+                    instrument.NoteOff(n);
+                }
+                noteStream.Remove(endSample);
+            }
+        }
+
+        private void AddNoteToStream( MIDINote n )
+        {
+            instrument.NoteOn(n);
+
+            //get sample at which we should call noteOff on this note
+            uint endSample = globalSample + (uint)(n.duration * Settings.BeatLength_s);
+
+            Debug.Log(globalSample + " " + endSample + " " + n.duration);
+
+            //if not already part of the dictionary, add it
+            if ( !noteStream.ContainsKey(endSample) )
+                noteStream[endSample] = new List<MIDINote>();
+
+            noteStream[endSample].Add(n);
+        }
 
         /// <summary>
         /// Create a new piano roll user interface
@@ -154,11 +193,13 @@ namespace Sequencer.PianoRoll
                 {
                     if (matrix[step, j].noteOn)
                     {
-                        instrument.NoteOn(matrix[step, j].note);
+                        AddNoteToStream(matrix[step, j].note);
+
+                        //instrument.NoteOn(matrix[step, j].note);
                     }
                     else
                     {
-                        instrument.NoteOff(matrix[step, j].note);
+                        ;// instrument.NoteOff(matrix[step, j].note);
                     }                     
                 }
             }
@@ -220,8 +261,8 @@ namespace Sequencer.PianoRoll
 
            // matrix2[beat].Add(new NoteEvent(n, true));
 
-            int endBeat = Mathf.Clamp(beat + n.duration + 1, 0, notesPerSegment - 1);
-            matrix[endBeat, pitchIndex] = new NoteEvent(n, false);
+           // int endBeat = Mathf.Clamp(beat + n.duration + 1, 0, notesPerSegment - 1);
+           // matrix[endBeat, pitchIndex] = new NoteEvent(n, false);
 
             //matrix2[endBeat].Add(new NoteEvent(n, false));
         }

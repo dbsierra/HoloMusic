@@ -29,7 +29,7 @@ namespace Sequencer
             public void OnTap()
             {
                 PRoll_NoteDrawer.BeginNoteDraw(transform.position, PositionIndex, PitchIndex, Controller);
-                PRoll_NoteDrawer.EndNoteDraw(transform.position);
+                InjectNote(PRoll_NoteDrawer.EndNoteDraw(transform.position) );
             }
 
 
@@ -43,9 +43,12 @@ namespace Sequencer
             }
             public void OnNavigationCompleted( Vector3 relativePosition )
             {
-                byte duration = PRoll_NoteDrawer.EndNoteDraw(relativePosition);
-                //inject note to controller
-                Controller.AddNote( PositionIndex, Settings.MidiFromPitchIndex(PitchIndex, Controller.octave), 1, duration);
+                InjectNote(PRoll_NoteDrawer.EndNoteDraw(relativePosition) );
+            }
+
+            private void InjectNote( byte duration )
+            {
+                Controller.AddNote(PositionIndex, Settings.MidiFromPitchIndex(PitchIndex, Controller.octave), 1, duration);
             }
 
 
