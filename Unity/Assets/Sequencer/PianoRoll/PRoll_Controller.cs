@@ -17,13 +17,24 @@ namespace Sequencer.PianoRoll
     ///     - Instantiate and maintain all of the slots for this piano roll
     ///     - Store sequenced note information for this piano roll
     ///     - Keep track of current position in the sequence
-    ///     
+    /// 
+    /// A sequencer steps through at the specified BPM. For each step, it should play whatever notes located there for their duration.
+    /// 
+    /// Problem:
+    /// How do we deal with duration? One method is to specify note on and note off messages
+    /// 
+    /// 
     /// </summary>
     public class PRoll_Controller : MonoBehaviour
     {
 
+        //TODO: separate certain things outside of individual sequencer objects
+        private int notesPerSegment = 16;
+        public byte octave = 4;
+
         //The main data structure containing the note sequence
-        List<NoteEvent>[] matrix;
+        //List<NoteEvent>[] matrix2;
+        NoteEvent[,] matrix;
 
         //current step in the sequence
         byte step;
@@ -36,23 +47,41 @@ namespace Sequencer.PianoRoll
         //The current sample number
         int sample;
 
+        public GameObject NoteSlot;
+        public Transform NoteSlotContainer;
+
         #region MonoBehavior functions
         void Start()
         {
             //16 bars, 1/16th note resolution
-            matrix = new List<NoteEvent>[16 * 4];
-            for (int i = 0; i < matrix.Length; i++)
+            /*
+            matrix2 = new List<NoteEvent>[16];
+            for (int i = 0; i < matrix2.Length; i++)
             {
-                matrix[i] = new List<NoteEvent>();
+                matrix2[i] = new List<NoteEvent>();
             }
+            */
+            matrix = new NoteEvent[notesPerSegment, 12];
+            
+            for (int i = 0; i < notesPerSegment; i++)
+            {
+                for( int j=0; j < 12; j++ )
+                {
+                    matrix[i, j] = new NoteEvent();
+                }
+            }
+            
             step = 0;
             instrument = new FMSynthesizer();
             ready = true;
 
-            AddNote(0, Settings.getMIDI("C#4"), 1, 1);
-            AddNote(1, Settings.getMIDI("F#4"), 1, 1);
-            AddNote(2, Settings.getMIDI("E4"), 1, 1);
-            AddNote(3, Settings.getMIDI("C#4"), 1, 1);
+            CreatePianoRollGUI(new Vector2(.01f, .01f), -0.0002f);
+
+            //AddNote(0, Settings.getMIDI("C#4"), 1, 1);
+            //AddNote(4, Settings.getMIDI("G#4"), 1, 3);
+            //AddNote(10, Settings.getMIDI("E4"), 1, 1);
+            //AddNote(14, Settings.getMIDI("A3"), 1, 1);
+
         }
 
         void OnAudioFilterRead(float[] data, int channels)
@@ -86,10 +115,30 @@ namespace Sequencer.PianoRoll
         /// <summary>
         /// Create a new piano roll user interface
         /// </summary>
-        private void CreatePianoRollGUI()
+        private void CreatePianoRollGUI( Vector2 size, float zOffset )
         {
-            //instantiate piano roll prefab.
+            //Instantiate piano roll prefab.
+            //12 rows of 16 columns
+            for(byte r =0; r<12; r++ )
+            {
+                for( byte c=0; c<16; c++ )
+                {
+                    GameObject g = (GameObject)GameObject.Instantiate(NoteSlot);
+                    g.transform.SetParent( NoteSlotContainer, false);
+                    g.transform.localPosition = new Vector3(size.x * c, size.y * r, zOffset);
 
+                    PRoll_Slot slot = g.GetComponent<PRoll_Slot>();
+                    if( slot == null )
+                    {
+                        Debug.LogError("Missing PRoll_Slot class");
+                        break;
+                    }
+
+                    slot.PositionIndex = c;
+                    slot.PitchIndex = r;
+                    slot.Controller = this; 
+                }
+            }
 
         }
 
@@ -98,8 +147,24 @@ namespace Sequencer.PianoRoll
         /// </summary>
         private void OnStep()
         {
-            //Debug.Log("Step: " + step + " " + matrix[step].Count);
-            foreach (NoteEvent n in matrix[step])
+            
+            for (int j = 0; j < 12; j++)
+            {
+                if( matrix[step, j].active )
+                {
+                    if (matrix[step, j].noteOn)
+                    {
+                        instrument.NoteOn(matrix[step, j].note);
+                    }
+                    else
+                    {
+                        instrument.NoteOff(matrix[step, j].note);
+                    }                     
+                }
+            }
+            
+            /*
+            foreach (NoteEvent n in matrix2[step])
             {
                 if (n.noteOn)
                 {
@@ -108,10 +173,27 @@ namespace Sequencer.PianoRoll
                 else
                     instrument.NoteOff(n.note);
             }
+            */
 
             step += 1;
-            if (step >= matrix.Length)
+            if (step >= notesPerSegment)
                 step = 0;
+        }
+
+
+        /// <summary>
+        /// Given the note, return the position index of the next note. If no other note, returns length of row
+        /// </summary>
+        /// <param name="noteSlot"></param>
+        public int GetIndexOfNextNote( int startPosition, int pitchIndex )
+        {
+            int i = startPosition;
+            for( i = startPosition; i < notesPerSegment; i++ )
+            {
+                if (matrix[i, pitchIndex].active)
+                    break;
+            }
+            return i;
         }
 
         /// <summary>
@@ -121,9 +203,9 @@ namespace Sequencer.PianoRoll
         /// <param name="pitch"></param>
         /// <param name="velocity"></param>
         /// <param name="duration"></param>
-        void AddNote(byte beat, byte pitch, byte velocity, byte duration)
+        public void AddNote(byte beat, byte pitch, byte velocity, byte duration)
         {
-            AddNote(beat, new MIDINote(pitch, duration, velocity));
+            AddNote(beat, new MIDINote(pitch, duration, velocity) );
         }
 
         /// <summary>
@@ -131,11 +213,22 @@ namespace Sequencer.PianoRoll
         /// </summary>
         /// <param name="beat">location to store the note</param>
         /// <param name="n">the note to store</param>
-        void AddNote(byte beat, MIDINote n)
+        public void AddNote(byte beat, MIDINote n)
         {
-            matrix[beat].Add(new NoteEvent(n, true));
-            int endBeat = Mathf.Clamp(beat + n.duration, 0, matrix.Length - 1);
-            matrix[endBeat].Add(new NoteEvent(n, false));
+            int pitchIndex = n.pitchLetterIndex;
+            matrix[beat, pitchIndex] = new NoteEvent(n, true);
+
+           // matrix2[beat].Add(new NoteEvent(n, true));
+
+            int endBeat = Mathf.Clamp(beat + n.duration + 1, 0, notesPerSegment - 1);
+            matrix[endBeat, pitchIndex] = new NoteEvent(n, false);
+
+            //matrix2[endBeat].Add(new NoteEvent(n, false));
+        }
+
+        public void RemoveNote(byte positionIndex, byte pitchIndex)
+        {
+            matrix[positionIndex, pitchIndex].active = false;
         }
     }
 

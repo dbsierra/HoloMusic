@@ -128,27 +128,33 @@ public class FocusManager : MonoBehaviour {
 
         relativePosition = relativePosition / 200f;
 #endif
-
-        InputTarget target = focusCache.GetComponent<InputTarget>();
-
-        if (target != null)
+        if( focusCache )
         {
-            target.SendMessage_NavigationUpdated(relativePosition);
+            InputTarget target = focusCache.GetComponent<InputTarget>();
+
+            if (target != null)
+            {
+                target.SendMessage_NavigationUpdated(relativePosition);
+            }
         }
-        
     }
     private void NavigationCompletedEvent(Vector3 relativePosition)
     {
+        
         cursorInfo.CursorMat.SetColor("_Color", cursorInfo.IdleColor);
 
-        InputTarget target = focusCache.GetComponent<InputTarget>();
-
-        if (target != null)
+        if( focusCache)
         {
-            target.SendMessage_NavigationCompleted(relativePosition);
+            InputTarget target = focusCache.GetComponent<InputTarget>();
+
+            if (target != null)
+            {
+                target.SendMessage_NavigationCompleted(relativePosition);
+            }
+
+            focusCache = null;
         }
 
-        focusCache = null;
     }
     private void HoldStartEvent()
     {

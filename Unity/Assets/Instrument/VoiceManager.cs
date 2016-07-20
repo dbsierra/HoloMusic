@@ -42,6 +42,7 @@ namespace MusicDevice
         public void NoteOn(MIDINote n)
         {
             Voice v = GetNextVoice();
+            
             v.NoteOn(n);
             n.voice = v;
             
@@ -53,6 +54,7 @@ namespace MusicDevice
         float time;
         public void NoteOff(MIDINote n)
         {
+
             n.voice.NoteOff();
         }
 
