@@ -82,6 +82,7 @@ public class FMVoice : Voice
         this.n = n;
         eg.GateOpen();
         processing = true;
+
     }
     public void NoteOff()
     {
@@ -109,9 +110,9 @@ public class FMVoice : Voice
             float m3 = Mathf.Sin(TWO_PI * n.frequency * 7.5f * t) * .3f;
             float m2 = Mathf.Sin(TWO_PI * n.frequency * 4f * t + m3) * .2f;
             float m1 = Mathf.Sin(TWO_PI * n.frequency * 2f * t + m2) * .5f;
-            o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Gain;
+            //o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Gain;
 
-            //o = Mathf.Sin(TWO_PI * n.frequency * t) * Gain;
+            o = Mathf.Sin(TWO_PI * n.frequency * t) * Gain;
 
             //o = table[index++] * Amplitude;
            // if (index >= table.Length)
@@ -124,7 +125,8 @@ public class FMVoice : Voice
                 Done();
                 
             }
-                
+
+            
         }
         return o;
     }

@@ -2,15 +2,11 @@
 using System.Collections;
 using MusicUtilities;
 
-namespace Sequencer
+namespace Sequencer.PianoRoll
 {
-    namespace PianoRoll
-    {
 
         public class PRoll_Slot : MonoBehaviour
         {
-
-            // TextMesh tm;
 
             public PRoll_Controller Controller;
             public byte PositionIndex;
@@ -18,12 +14,6 @@ namespace Sequencer
 
             void Start()
             {
-               // tm = GameObject.Find("DebugText").GetComponent<TextMesh>();
-            }
-
-            void Update()
-            {
-
             }
 
             public void OnTap()
@@ -31,7 +21,6 @@ namespace Sequencer
                 PRoll_NoteDrawer.BeginNoteDraw(transform.position, PositionIndex, PitchIndex, Controller);
                 InjectNote(PRoll_NoteDrawer.EndNoteDraw(transform.position) );
             }
-
 
             public void OnNavigationStarted( Vector3 relativePosition )
             {
@@ -45,17 +34,12 @@ namespace Sequencer
             {
                 InjectNote(PRoll_NoteDrawer.EndNoteDraw(relativePosition) );
             }
-
             private void InjectNote( byte duration )
             {
                 Controller.AddNote(PositionIndex, Settings.MidiFromPitchIndex(PitchIndex, Controller.octave), 1, duration);
             }
 
-
         }
 
-
-
-    }
 
 }

@@ -35,22 +35,51 @@ namespace Sequencer.PianoRoll
         //The main data structure containing the note sequence
         //List<NoteEvent>[] matrix2;
         NoteEvent[,] matrix;
+
+        //note stream contains notes that need to be released. The key corresponds to the next sample count at which to release the notes
         Dictionary<uint, List<MIDINote>> noteStream = new Dictionary<uint, List<MIDINote>>();
 
         //current step in the sequence
         byte step;
+        byte oldStep;
 
+        //signifies when piano roll is done initializing
         bool ready;
 
         //the sound producing instrument this will trigger
         FMSynthesizer instrument;
 
-        //The current sample number
+        //used for timing the step sequence
         int sample;
+
+        //The current sample number
         uint globalSample;
 
+
+        //gets instanced, represents one slot on the piano roll
         public GameObject NoteSlot;
+
+        //the container for all the slots
         public Transform NoteSlotContainer;
+
+        public Transform TimelineMarker;
+
+        float currentTimeOld;
+        float currentTime;
+        uint oldSample;
+        AudioSource debugAudioSource;
+        float[] debugAudioClipData;
+        bool debugPlay;
+        int debugIndex;
+        Material debugCube;
+        bool hitIt;
+        bool blueFlash;
+        bool stripFlash;
+        public Renderer strip;
+        float cT;
+        float oT;
+        int debugStep;
+        int count;
 
         #region MonoBehavior functions
         void Start()
@@ -83,9 +112,52 @@ namespace Sequencer.PianoRoll
             //AddNote(4, Settings.getMIDI("G#4"), 1, 3);
             //AddNote(10, Settings.getMIDI("E4"), 1, 1);
             //AddNote(14, Settings.getMIDI("A3"), 1, 1);
+            debugAudioSource = GetComponent<AudioSource>();
+            debugAudioClipData = new float[debugAudioSource.clip.samples * debugAudioSource.clip.channels];
+            debugAudioSource.clip.GetData(debugAudioClipData, 0);
 
+            //debugAudioSource.clip.SetData(debugAudioClipData, 0);
+            //debugAudioSource.Play();
+
+            debugCube = GameObject.Find("DebugCube").GetComponent<Renderer>().material;
         }
 
+
+
+        void Update()
+        {
+            
+        }
+       
+        
+        void FixedUpdate()
+        {
+
+            cT += Time.fixedDeltaTime;
+            if( cT - oT >= Settings.BeatLength )
+            {
+                if (debugStep >= 15)
+                    debugStep = 0;
+
+                MoveTimelineTracker();
+                strip.material.SetColor("_Color", new Color(1, 1f, 1f, .2f));
+                for (int j = 0; j < 12; j++)
+                {
+                    if (matrix[step, j].active)
+                    {
+
+                        strip.material.SetColor("_Color", new Color(0, 1f, 1f, .5f));
+                        break;
+                           
+                    }
+                }
+
+                oT = cT;
+
+                debugStep++;
+            }
+        }
+        
         void OnAudioFilterRead(float[] data, int channels)
         {
             if (ready)
@@ -104,23 +176,27 @@ namespace Sequencer.PianoRoll
                     else
                         sample++;
 
-                    
-
                     //obtain our sample for audio playback!
-                    float s = instrument.NextSample();
+                    //float s = instrument.NextSample();
+                    float s = 0;
+
+                    s = instrument.NextSample();
 
                     //if we are in stereo, duplicate the sample for L+R channels
-                    data[i] = .1f * s;
+                    data[i] = .2f * s;
                     if (channels == 2)
                     {
                         data[i + 1] = data[i];
                     }
 
                     globalSample++;
+
                 }
             }
 
         }
+        
+
         #endregion
 
         private void ReleaseNotesFromStream( uint endSample )
@@ -184,24 +260,26 @@ namespace Sequencer.PianoRoll
         /// </summary>
         private void OnStep()
         {
-            
-            for (int j = 0; j < 12; j++)
-            {
-                if( matrix[step, j].active )
-                {
-                    if (matrix[step, j].noteOn)
-                    {
+             for (int j = 0; j < 12; j++)
+             {
+                 if( matrix[step, j].active )
+                 {
+                     if (matrix[step, j].noteOn)
+                     {
                         AddNoteToStream(matrix[step, j].note);
 
+                        blueFlash = true;
+                         currentTimeOld = currentTime;
+                       
                         //instrument.NoteOn(matrix[step, j].note);
                     }
-                    else
-                    {
-                        ;// instrument.NoteOff(matrix[step, j].note);
-                    }                     
-                }
-            }
-            
+                     else
+                     {
+                         ;// instrument.NoteOff(matrix[step, j].note);
+                     }                     
+                 }
+             }
+
             /*
             foreach (NoteEvent n in matrix2[step])
             {
@@ -214,11 +292,24 @@ namespace Sequencer.PianoRoll
             }
             */
 
+
+
+            hitIt = true;
             step += 1;
             if (step >= notesPerSegment)
                 step = 0;
         }
 
+
+        private void MoveTimelineTracker()
+        {
+            float moveBy = -.01f;
+
+            if (step == 0)
+                TimelineMarker.localPosition = new Vector3(0, 0, 0.0005f);
+            else
+                TimelineMarker.Translate(new Vector3(moveBy, 0, 0), Space.Self);
+        }
 
         /// <summary>
         /// Given the note, return the position index of the next note. If no other note, returns length of row
