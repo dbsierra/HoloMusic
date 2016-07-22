@@ -46,7 +46,7 @@ namespace Sequencer.PianoRoll
         /// Begin drawing a note. Initializes variabes.
         /// </summary>
         /// <param name="startPos">Represents the position that is the center of the piano roll slot to draw the note on</param>
-        public static void BeginNoteDraw( Vector3 startPos, byte positionIndex, byte pitchSlotIndex, PRoll_Controller controller )
+        public static void BeginNoteDraw( Vector3 startPos, byte positionIndex, byte pitchSlotIndex, PRoll_Slot slot )
         {
             float absoluteSizeY = .0035f;
             startPos.y = startPos.y + (ScaleOfSquare / -4) * absoluteSizeY / (ScaleOfSquare / 2);
@@ -54,18 +54,16 @@ namespace Sequencer.PianoRoll
             currentNoteBeingDrawn = ((GameObject)(GameObject.Instantiate(Note, startPos, Quaternion.identity))).transform;
 
             PRoll_Note note = currentNoteBeingDrawn.GetComponent<PRoll_Note>();
-            note.Controller = controller;
-            note.PitchIndex = pitchSlotIndex;
-            note.PositionIndex = positionIndex;
+            note.Init(slot, pitchSlotIndex, positionIndex);
+            slot.NoteGeo = note;
 
             startPos = Input.mousePosition;
             thresholdRank = 0;
 
             //TODO: Keep track of earliest placed note in a row, and use that to determine the max scale. If no other notes, than use based off of final threshold value
-            int indexOfNextNote = controller.GetIndexOfNextNote( positionIndex, pitchSlotIndex );
+            int indexOfNextNote = slot.Controller.GetIndexOfNextNote( positionIndex, pitchSlotIndex );
             
             maxThresholdInc = Mathf.Clamp( indexOfNextNote - positionIndex - 1, 0, thresholdValues.Length-1 );
-           
         }
 
         public static void DrawNote(float relativeScale)
@@ -86,7 +84,6 @@ namespace Sequencer.PianoRoll
             }
 
             currentNoteBeingDrawn.localScale = new Vector3(scale, 1, 1);
-
         }
 
         //returns duration of note

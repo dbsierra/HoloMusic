@@ -29,19 +29,17 @@ namespace Sequencer.PianoRoll
     {
 
         //TODO: separate certain things outside of individual sequencer objects
-        private int notesPerSegment = 16;
+        private byte notesPerSegment = 16;
         public byte octave = 4;
 
         //The main data structure containing the note sequence
-        //List<NoteEvent>[] matrix2;
-        NoteEvent[,] matrix;
+        PRoll_Slot[,] matrix;
 
         //note stream contains notes that need to be released. The key corresponds to the next sample count at which to release the notes
-        Dictionary<uint, List<MIDINote>> noteStream = new Dictionary<uint, List<MIDINote>>();
+        Dictionary<uint, List<PRoll_Slot>> noteStream = new Dictionary<uint, List<PRoll_Slot>>();
 
-        //current step in the sequence
-        byte step;
-        byte oldStep;
+        byte step;   //current step in the sequence
+        byte mtStep; //main thread step: used for triggering things in the main thread (not OnAudioFilterRead(), so e.g. Update() ... etc)
 
         //signifies when piano roll is done initializing
         bool ready;
@@ -49,115 +47,82 @@ namespace Sequencer.PianoRoll
         //the sound producing instrument this will trigger
         FMSynthesizer instrument;
 
-        //used for timing the step sequence
-        int sample;
+        uint globalSample;  //The current sample number
+        uint sample;        //used for sequencer timing. Resets when == beath length
 
-        //The current sample number
-        uint globalSample;
-
-
-        //gets instanced, represents one slot on the piano roll
-        public GameObject NoteSlot;
-
-        //the container for all the slots
-        public Transform NoteSlotContainer;
-
+        public GameObject NoteSlot;         //gets instanced, represents one slot on the piano roll
+        public Transform NoteSlotContainer; //the container for all the slots
         public Transform TimelineMarker;
-
-        float currentTimeOld;
-        float currentTime;
-        uint oldSample;
-        AudioSource debugAudioSource;
-        float[] debugAudioClipData;
-        bool debugPlay;
-        int debugIndex;
-        Material debugCube;
-        bool hitIt;
-        bool blueFlash;
-        bool stripFlash;
         public Renderer strip;
-        float cT;
-        float oT;
-        int debugStep;
-        int count;
 
+        //main thread triggers from audio thread
+        bool hitIt;
+        bool deHighlightNote;
+        List<PRoll_Slot> deHighlightNote_list;
+        bool highlightNote;
+        List<PRoll_Slot> highlightNote_list;
+ 
         #region MonoBehavior functions
         void Start()
         {
-            //16 bars, 1/16th note resolution
-            /*
-            matrix2 = new List<NoteEvent>[16];
-            for (int i = 0; i < matrix2.Length; i++)
-            {
-                matrix2[i] = new List<NoteEvent>();
-            }
-            */
-            matrix = new NoteEvent[notesPerSegment, 12];
+            matrix = new PRoll_Slot[notesPerSegment, 12];
             
-            for (int i = 0; i < notesPerSegment; i++)
-            {
-                for( int j=0; j < 12; j++ )
-                {
-                    matrix[i, j] = new NoteEvent();
-                }
-            }
             
-            step = 0;
+            step = mtStep = 0;
             instrument = new FMSynthesizer();
+           
+            InitializePianoRoll(new Vector2(.01f, .01f), -0.0002f);
+
             ready = true;
 
-            CreatePianoRollGUI(new Vector2(.01f, .01f), -0.0002f);
+            // AddNote(0, Settings.getMIDI("C#4"), 1, 1);
+            // AddNote(4, Settings.getMIDI("G#4"), 1, 1);
+            // AddNote(8, Settings.getMIDI("E4"), 1, 1);
+            // AddNote(12, Settings.getMIDI("A3"), 1, 1);
 
-            //AddNote(0, Settings.getMIDI("C#4"), 1, 1);
-            //AddNote(4, Settings.getMIDI("G#4"), 1, 3);
-            //AddNote(10, Settings.getMIDI("E4"), 1, 1);
-            //AddNote(14, Settings.getMIDI("A3"), 1, 1);
-            debugAudioSource = GetComponent<AudioSource>();
-            debugAudioClipData = new float[debugAudioSource.clip.samples * debugAudioSource.clip.channels];
-            debugAudioSource.clip.GetData(debugAudioClipData, 0);
-
-            //debugAudioSource.clip.SetData(debugAudioClipData, 0);
-            //debugAudioSource.Play();
-
-            debugCube = GameObject.Find("DebugCube").GetComponent<Renderer>().material;
+            deHighlightNote_list = new List<PRoll_Slot>();
+            highlightNote_list = new List<PRoll_Slot>();
         }
-
-
 
         void Update()
         {
-            
-        }
-       
-        
-        void FixedUpdate()
-        {
-
-            cT += Time.fixedDeltaTime;
-            if( cT - oT >= Settings.BeatLength )
+            if ( hitIt )
             {
-                if (debugStep >= 15)
-                    debugStep = 0;
+                hitIt = false;
 
                 MoveTimelineTracker();
-                strip.material.SetColor("_Color", new Color(1, 1f, 1f, .2f));
-                for (int j = 0; j < 12; j++)
-                {
-                    if (matrix[step, j].active)
-                    {
+                //strip.material.SetColor("_Color", new Color(1, 1f, 1f, .2f));
 
-                        strip.material.SetColor("_Color", new Color(0, 1f, 1f, .5f));
-                        break;
-                           
+                //Debug.Log(highlightNote + " " + deHighlightNote);
+
+                if (highlightNote)
+                {
+                    highlightNote = false;
+                    foreach (PRoll_Slot n in highlightNote_list)
+                    {
+                        n.NotePlayingAnimation();
                     }
+                    highlightNote_list.Clear();
                 }
 
-                oT = cT;
+                //De-highlight any notes that are done playing
+                if (deHighlightNote)
+                {
+                    deHighlightNote = false;
+                    foreach (PRoll_Slot n in deHighlightNote_list)
+                    {
+                        n.NoteStoppingAnimation();
+                    }
+                    deHighlightNote_list.Clear();
+                }
 
-                debugStep++;
+                mtStep++;
+                if (mtStep >= notesPerSegment)
+                    mtStep = 0;
             }
+
         }
-        
+
         void OnAudioFilterRead(float[] data, int channels)
         {
             if (ready)
@@ -177,13 +142,10 @@ namespace Sequencer.PianoRoll
                         sample++;
 
                     //obtain our sample for audio playback!
-                    //float s = instrument.NextSample();
-                    float s = 0;
-
-                    s = instrument.NextSample();
+                    float s = instrument.NextSample();
 
                     //if we are in stereo, duplicate the sample for L+R channels
-                    data[i] = .2f * s;
+                    data[i] = .1f * s;
                     if (channels == 2)
                     {
                         data[i + 1] = data[i];
@@ -193,34 +155,38 @@ namespace Sequencer.PianoRoll
 
                 }
             }
-
         }
-        
-
         #endregion
 
         private void ReleaseNotesFromStream( uint endSample )
         {
             if( noteStream.ContainsKey(endSample) )
             {
-                foreach(MIDINote n in noteStream[endSample] )
+                foreach (PRoll_Slot n in noteStream[endSample] )
                 {
-                    instrument.NoteOff(n);
+                    instrument.NoteOff(n.Note);
+
+                    //Main thread animations
+                    deHighlightNote_list.Add(n);
                 }
+
+                //Main thread animations
+                deHighlightNote = true;
+
                 noteStream.Remove(endSample);
             }
         }
 
-        private void AddNoteToStream( MIDINote n )
+        private void AddNoteToStream(PRoll_Slot n )
         {
-            instrument.NoteOn(n);
+            instrument.NoteOn(n.Note);
 
             //get sample at which we should call noteOff on this note
-            uint endSample = globalSample + (uint)(n.duration * Settings.BeatLength_s);
+            uint endSample = globalSample + (uint)(n.Note.duration * Settings.BeatLength_s);
 
             //if not already part of the dictionary, add it
             if ( !noteStream.ContainsKey(endSample) )
-                noteStream[endSample] = new List<MIDINote>();
+                noteStream[endSample] = new List<PRoll_Slot>();
 
             noteStream[endSample].Add(n);
         }
@@ -228,7 +194,7 @@ namespace Sequencer.PianoRoll
         /// <summary>
         /// Create a new piano roll user interface
         /// </summary>
-        private void CreatePianoRollGUI( Vector2 size, float zOffset )
+        private void InitializePianoRoll( Vector2 size, float zOffset )
         {
             //Instantiate piano roll prefab.
             //12 rows of 16 columns
@@ -247,68 +213,66 @@ namespace Sequencer.PianoRoll
                         break;
                     }
 
+                    matrix[c, r] = slot;
+
+                    slot.Note = new MIDINote(Settings.MidiFromPitchIndex(r, octave), 1, 1);
                     slot.PositionIndex = c;
                     slot.PitchIndex = r;
                     slot.Controller = this; 
                 }
             }
+        }
+
+        private void RefreshPianoRoll()
+        {
 
         }
+
+        /// <summary>
+        /// Get rid of all notes in the Piano Roll
+        /// </summary>
+        private void FlushPianoRoll()
+        {
+            for (byte r = 0; r < 12; r++)
+            {
+                for (byte c = 0; c < 16; c++)
+                {
+
+                }
+            }
+        }
+
 
         /// <summary>
         /// Gets called on every step of the sequence
         /// </summary>
         private void OnStep()
         {
-             for (int j = 0; j < 12; j++)
+            hitIt = true;
+            for (int j = 0; j < 12; j++)
              {
                  if( matrix[step, j].active )
                  {
-                     if (matrix[step, j].noteOn)
-                     {
-                        AddNoteToStream(matrix[step, j].note);
-
-                        blueFlash = true;
-                         currentTimeOld = currentTime;
-                       
-                        //instrument.NoteOn(matrix[step, j].note);
-                    }
-                     else
-                     {
-                         ;// instrument.NoteOff(matrix[step, j].note);
-                     }                     
+                    AddNoteToStream(matrix[step, j]);
+                    highlightNote_list.Add(matrix[step, j]);
+                    highlightNote = true;
                  }
              }
 
-            /*
-            foreach (NoteEvent n in matrix2[step])
-            {
-                if (n.noteOn)
-                {
-                    instrument.NoteOn(n.note);
-                }
-                else
-                    instrument.NoteOff(n.note);
-            }
-            */
 
-
-
-            hitIt = true;
             step += 1;
             if (step >= notesPerSegment)
                 step = 0;
         }
 
-
         private void MoveTimelineTracker()
         {
             float moveBy = -.01f;
 
-            if (step == 0)
-                TimelineMarker.localPosition = new Vector3(0, 0, 0.0005f);
+            if (mtStep == 0)
+                TimelineMarker.localPosition = new Vector3( 0, 0, 0.0005f );
             else
-                TimelineMarker.Translate(new Vector3(moveBy, 0, 0), Space.Self);
+                TimelineMarker.Translate( new Vector3(moveBy, 0, 0), Space.Self );
         }
 
         /// <summary>
@@ -346,18 +310,13 @@ namespace Sequencer.PianoRoll
         public void AddNote(byte beat, MIDINote n)
         {
             int pitchIndex = n.pitchLetterIndex;
-            matrix[beat, pitchIndex] = new NoteEvent(n, true);
-
-           // matrix2[beat].Add(new NoteEvent(n, true));
-
-           // int endBeat = Mathf.Clamp(beat + n.duration + 1, 0, notesPerSegment - 1);
-           // matrix[endBeat, pitchIndex] = new NoteEvent(n, false);
-
-            //matrix2[endBeat].Add(new NoteEvent(n, false));
+            matrix[beat, pitchIndex].Note = n;
+            matrix[beat, pitchIndex].active = true;
         }
 
         public void RemoveNote(byte positionIndex, byte pitchIndex)
         {
+          //  Debug.Log(positionIndex + " " + pitchIndex);
             matrix[positionIndex, pitchIndex].active = false;
         }
     }

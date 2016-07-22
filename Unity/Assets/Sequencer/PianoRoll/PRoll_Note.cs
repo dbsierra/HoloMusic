@@ -4,26 +4,41 @@ using Sequencer.PianoRoll;
 
 public class PRoll_Note : MonoBehaviour {
 
-    public PRoll_Controller Controller;
+    public PRoll_Slot Slot;
     public byte PitchIndex;
     public byte PositionIndex;
+    private Material mat;
 
-	void Start () {
-        
+	public void Init( PRoll_Slot Slot, byte PitchIndex, byte PositionIndex )
+    {
+        this.Slot = Slot;
+        this.PitchIndex = PitchIndex;
+        this.PositionIndex = PositionIndex;
     }
-	
-	void Update () {
-	
-	}
+
+    void OnEnable()
+    {
+        mat = gameObject.GetComponent<Renderer>().material;
+        mat.SetColor("_EmissionColor", new Color(.1f, .1f, .1f));
+    }
 
     public void Delete()
     {
-        Controller.RemoveNote(PositionIndex, PitchIndex);
+        Slot.Controller.RemoveNote(PositionIndex, PitchIndex);
         GameObject.Destroy(gameObject);
     }
 
     private void OnTap()
     {
         Delete();
+    }
+
+    public void PlayingAnimation()
+    {
+        mat.SetColor("_EmissionColor", new Color(0, .5f, .85f));
+    }
+    public void StoppingAnimation()
+    {
+        mat.SetColor("_EmissionColor", new Color(.1f, .1f, .1f));
     }
 }

@@ -167,6 +167,11 @@ namespace MusicUtilities
         }
         public static byte MidiFromPitchIndex(byte index, byte octave)
         {
+            if( index >= 12 )
+            {
+                Debug.LogError("Attemping to access pitch outside of 12 note octave");
+                    return 0;
+            }
             return getMIDI( pitchIndexToString[index]+""+octave );
         }
 
