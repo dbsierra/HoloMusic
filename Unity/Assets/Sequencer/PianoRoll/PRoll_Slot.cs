@@ -6,7 +6,8 @@ namespace Sequencer.PianoRoll
 {
     public class PRoll_Slot : MonoBehaviour
     {
-        public bool active; //active means this slot has a note inside of it and should be played
+        public bool active; //active means this slot has a note inside of it and should be played along with all the animations required
+        public bool locked; //just means this slot cannot be modified, as a note is in its space, but it is not the initial slot holding the note, so no need to play animations or sounds.
 
         public PRoll_Controller Controller;
         public byte PositionIndex;
@@ -20,30 +21,30 @@ namespace Sequencer.PianoRoll
 
         public void OnTap()
         {
-            if (!active)
+            if (!active && !locked)
             {
                 PRoll_NoteDrawer.BeginNoteDraw(transform.position, PositionIndex, PitchIndex, this);
                 InjectNote(PRoll_NoteDrawer.EndNoteDraw(transform.position));
             } 
             else
             {
-
+                NoteGeo.Delete();
             }  
         }
 
         public void OnNavigationStarted( Vector3 relativePosition )
         {
-            if( !active )
+            if( !active && !locked)
                 PRoll_NoteDrawer.BeginNoteDraw(transform.position, PositionIndex, PitchIndex, this);
         }
         public void OnNavigationUpdated( Vector3 relativePosition )
         {
-            if (!active)
+            if (!active && !locked)
                 PRoll_NoteDrawer.DrawNote(relativePosition.x);
         }
         public void OnNavigationCompleted( Vector3 relativePosition )
         {
-            if (!active)
+            if (!active && !locked)
                 InjectNote(PRoll_NoteDrawer.EndNoteDraw(relativePosition) );
         }
         private void InjectNote( byte duration )

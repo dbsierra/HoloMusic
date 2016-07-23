@@ -54,8 +54,10 @@ namespace MusicDevice
         float time;
         public void NoteOff(MIDINote n)
         {
-
-            n.voice.NoteOff();
+            if (n.voice != null)
+                n.voice.NoteOff();
+            else
+                Debug.LogError("Trying to turn off a note that was never assigned a voice - note with pitch index: " + n.pitchLetterIndex);
         }
 
         public float NextSample()

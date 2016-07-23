@@ -25,7 +25,6 @@ public class PRoll_Note : MonoBehaviour {
     public void Delete()
     {
         Slot.Controller.RemoveNote(PositionIndex, PitchIndex);
-        GameObject.Destroy(gameObject);
     }
 
     private void OnTap()

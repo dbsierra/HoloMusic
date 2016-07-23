@@ -11,7 +11,7 @@ public class FMSynthesizer : Instrument {
     public FMSynthesizer()
     {
         
-        FMVoice[] voices = new FMVoice[4];
+        FMVoice[] voices = new FMVoice[6];
         for( int i=0; i<voices.Length; i++)
         {
             voices[i] = new FMVoice("voice"+i);

@@ -95,6 +95,7 @@ namespace Sequencer.PianoRoll
 
                 //Debug.Log(highlightNote + " " + deHighlightNote);
 
+
                 if (highlightNote)
                 {
                     highlightNote = false;
@@ -121,6 +122,8 @@ namespace Sequencer.PianoRoll
                     mtStep = 0;
             }
 
+            if (Input.GetKeyDown(KeyCode.C))
+                FlushPianoRoll();
         }
 
         void OnAudioFilterRead(float[] data, int channels)
@@ -237,7 +240,7 @@ namespace Sequencer.PianoRoll
             {
                 for (byte c = 0; c < 16; c++)
                 {
-
+                    RemoveNote(c, r);
                 }
             }
         }
@@ -307,18 +310,53 @@ namespace Sequencer.PianoRoll
         /// </summary>
         /// <param name="beat">location to store the note</param>
         /// <param name="n">the note to store</param>
-        public void AddNote(byte beat, MIDINote n)
+        public void AddNote(byte positionIndex, MIDINote n)
         {
             int pitchIndex = n.pitchLetterIndex;
-            matrix[beat, pitchIndex].Note = n;
-            matrix[beat, pitchIndex].active = true;
+            
+            //The first slot the note occupies must be set to active
+            matrix[positionIndex, pitchIndex].Note = n;
+            matrix[positionIndex, pitchIndex].active = true;
+
+            //ensure all the slots that this note occupies are set to active
+            for ( int i= positionIndex + 1; i<= positionIndex + n.duration; i++)
+            {
+                if (i >= notesPerSegment)
+                    break;
+
+                matrix[i, pitchIndex].locked = true;
+                matrix[i, pitchIndex].NoteGeo = matrix[positionIndex, pitchIndex].NoteGeo;
+                matrix[i, pitchIndex].Note = n;
+            }
+            
         }
 
         public void RemoveNote(byte positionIndex, byte pitchIndex)
         {
-          //  Debug.Log(positionIndex + " " + pitchIndex);
-            matrix[positionIndex, pitchIndex].active = false;
+            if ( matrix[positionIndex, pitchIndex].active )
+            {
+                matrix[positionIndex, pitchIndex].active = false;
+                GameObject.Destroy(matrix[positionIndex, pitchIndex].NoteGeo.gameObject);
+
+                //Set needed properties for all of the proceeding notes for the duration
+                for (int i = positionIndex + 1; i <= positionIndex + matrix[positionIndex, pitchIndex].Note.duration; i++)
+                {
+                    if (i >= notesPerSegment)
+                        break;
+
+                    matrix[i, pitchIndex].locked = false;
+                    matrix[i, pitchIndex].NoteGeo = matrix[i, pitchIndex].NoteGeo;
+                }
+            }
+            //check to make sure the note doesn't have any geo associated with it even if it may not be active or locked
+            else
+            {
+                if (matrix[positionIndex, pitchIndex].NoteGeo != null)
+                    GameObject.Destroy(matrix[positionIndex, pitchIndex].NoteGeo.gameObject);
+            }
+
         }
+
     }
 
  
