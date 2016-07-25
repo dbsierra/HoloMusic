@@ -19,12 +19,21 @@ namespace Sequencer.PianoRoll
         {
         }
 
+        public void InsertNoteGeo()
+        {
+            if( NoteGeo )
+            {
+                GameObject.Destroy(NoteGeo);
+            }
+            PRoll_NoteDrawer.InsertNoteGeo(this);
+        }
+
         public void OnTap()
         {
             if (!active && !locked)
             {
-                PRoll_NoteDrawer.BeginNoteDraw(transform.position, PositionIndex, PitchIndex, this);
-                InjectNote(PRoll_NoteDrawer.EndNoteDraw(transform.position));
+                PRoll_NoteDrawer.BeginNoteDraw(this);
+                InjectNote(PRoll_NoteDrawer.EndNoteDraw());
             } 
             else
             {
@@ -35,7 +44,7 @@ namespace Sequencer.PianoRoll
         public void OnNavigationStarted( Vector3 relativePosition )
         {
             if( !active && !locked)
-                PRoll_NoteDrawer.BeginNoteDraw(transform.position, PositionIndex, PitchIndex, this);
+                PRoll_NoteDrawer.BeginNoteDraw(this);
         }
         public void OnNavigationUpdated( Vector3 relativePosition )
         {
@@ -45,7 +54,7 @@ namespace Sequencer.PianoRoll
         public void OnNavigationCompleted( Vector3 relativePosition )
         {
             if (!active && !locked)
-                InjectNote(PRoll_NoteDrawer.EndNoteDraw(relativePosition) );
+                InjectNote(PRoll_NoteDrawer.EndNoteDraw() );
         }
         private void InjectNote( byte duration )
         {

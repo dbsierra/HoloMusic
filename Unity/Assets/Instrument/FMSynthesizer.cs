@@ -28,6 +28,9 @@ public class FMSynthesizer : Instrument {
     {
         //Debug.Log("On: " + n.midi);
         voiceManager.NoteOn(n);
+
+        
+
     }
 
     public override void NoteOff(MIDINote n)
@@ -82,7 +85,7 @@ public class FMVoice : Voice
         this.n = n;
         eg.GateOpen();
         processing = true;
-
+        oldT = t;
     }
     public void NoteOff()
     {
@@ -90,13 +93,14 @@ public class FMVoice : Voice
         //Done();
     }
 
+    float oldT;
 
-    public  float NextSample()
+    public float NextSample()
     {
         float o = 0;
         if (processing)
         {
-            t += Settings.inc;
+            t += 1;
 
             Gain = eg.GetSample();
 
@@ -112,7 +116,7 @@ public class FMVoice : Voice
             float m1 = Mathf.Sin(TWO_PI * n.frequency * 2f * t + m2) * .5f;
             //o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Gain;
 
-            o = Mathf.Sin(TWO_PI * n.frequency * t) * Gain;
+            o = Mathf.Sin( (TWO_PI * n.frequency * t) / Settings.SampleRate) * Gain;
 
             //o = table[index++] * Amplitude;
            // if (index >= table.Length)
