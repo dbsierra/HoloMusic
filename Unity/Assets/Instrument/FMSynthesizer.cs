@@ -49,6 +49,8 @@ public class FMSynthesizer : Instrument {
 public class FMVoice : Voice
 {
     EnvelopeGenerator eg;
+    EnvelopeGenerator eg2;
+
     public VoiceManager parentManager { get; set; }
     public float Gain { get; set; }
     public string Name { get; set; }
@@ -66,10 +68,19 @@ public class FMVoice : Voice
     {
         eg = new EnvelopeGenerator(name);
         eg.Attack = .01f;
-        eg.Decay = .2f;
+        eg.Decay = .3f;
         eg.Sustain = .5f;
-        eg.Release = .05f;
+        eg.Release = .2f;
+
+        eg2 = new EnvelopeGenerator(name);
+        eg2.Attack = .01f;
+        eg2.Decay = .1f;
+        eg2.Sustain =  0f;
+        eg2.Release = .05f;
+
+
         Name = name;
+
 
         table = new float[Settings.SampleRate / 220];
 
@@ -84,12 +95,14 @@ public class FMVoice : Voice
     {
         this.n = n;
         eg.GateOpen();
+        eg2.GateOpen();
         processing = true;
         oldT = t;
     }
     public void NoteOff()
     {
         eg.GateClose();
+        eg2.GateClose();
         //Done();
     }
 
@@ -111,12 +124,14 @@ public class FMVoice : Voice
             o = Mathf.Sin(TWO_PI * n.frequency * t + m1   ) * Amplitude;
             */
 
-            float m3 = Mathf.Sin(TWO_PI * n.frequency * 7.5f * t) * .3f;
-            float m2 = Mathf.Sin(TWO_PI * n.frequency * 4f * t + m3) * .2f;
-            float m1 = Mathf.Sin(TWO_PI * n.frequency * 2f * t + m2) * .5f;
-            //o = Mathf.Sin(TWO_PI * n.frequency * t + m1) * Gain;
+            float baseFreq = (TWO_PI * n.frequency * t) / Settings.SampleRate;
 
-            o = Mathf.Sin( (TWO_PI * n.frequency * t) / Settings.SampleRate) * Gain;
+            float m3 = Mathf.Sin(baseFreq * 7f) * .3f;
+            float m2 = Mathf.Sin(baseFreq * 3.3f + m3) * .9f;
+            float m1 = Mathf.Sin(baseFreq * 1.9f + m2 ) * .5f * eg2.GetSample();
+            o = Mathf.Sin(baseFreq + m1) * Gain;
+
+            //o = Mathf.Sin( (TWO_PI * n.frequency * t) / Settings.SampleRate) * Gain;
 
             //o = table[index++] * Amplitude;
            // if (index >= table.Length)
