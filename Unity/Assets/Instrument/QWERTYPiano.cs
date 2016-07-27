@@ -7,28 +7,24 @@ public class QWERTYPiano : MonoBehaviour {
 
     public int Octave = 2;
     Dictionary<KeyCode, MIDINote> keyMap = new Dictionary<KeyCode, MIDINote>();
-    FMSynthesizer synth;
+    public UIFMSynthesizer synth;
     bool playing;
 
 
     // Use this for initialization
     void Start () {
-
-        
-        keyMap[KeyCode.A] = new MIDINote(48 - 12, 1);
-        keyMap[KeyCode.W] = new MIDINote(49 - 12, 1);
-        keyMap[KeyCode.S] = new MIDINote(50 - 12, 1);
-        keyMap[KeyCode.E] = new MIDINote(51 - 12, 1);
-        keyMap[KeyCode.D] = new MIDINote(52 - 12, 1);
-        keyMap[KeyCode.F] = new MIDINote(53 - 12, 1);
-        keyMap[KeyCode.T] = new MIDINote(54 - 12, 1);
-        keyMap[KeyCode.G] = new MIDINote(55 - 12, 1);
-        keyMap[KeyCode.Y] = new MIDINote(56 - 12, 1);
-        keyMap[KeyCode.H] = new MIDINote(57 - 12, 1);
-        keyMap[KeyCode.U] = new MIDINote(58 - 12, 1);
-        keyMap[KeyCode.J] = new MIDINote(59 - 12, 1);
-
-        synth = new FMSynthesizer();
+        keyMap[KeyCode.A] = new MIDINote(48 , 1);
+        keyMap[KeyCode.W] = new MIDINote(49 , 1);
+        keyMap[KeyCode.S] = new MIDINote(50 , 1);
+        keyMap[KeyCode.E] = new MIDINote(51 , 1);
+        keyMap[KeyCode.D] = new MIDINote(52 , 1);
+        keyMap[KeyCode.F] = new MIDINote(53 , 1);
+        keyMap[KeyCode.T] = new MIDINote(54 , 1);
+        keyMap[KeyCode.G] = new MIDINote(55 , 1);
+        keyMap[KeyCode.Y] = new MIDINote(56 , 1);
+        keyMap[KeyCode.H] = new MIDINote(57 , 1);
+        keyMap[KeyCode.U] = new MIDINote(58 , 1);
+        keyMap[KeyCode.J] = new MIDINote(59 , 1);
     }
 	
 	// Update is called once per frame
@@ -98,22 +94,6 @@ public class QWERTYPiano : MonoBehaviour {
 
     void OnAudioFilterRead(float[] data, int channels)
     {
-        //for each sample of this block of audio data
-        for (int i = 0; i < data.Length; i = i + channels)
-        {
-            
-            if (synth != null )
-            {
-                float s = synth.NextSample();
-
-                data[i] = .5f * s;
-                if (channels == 2)
-                {
-                     data[i + 1] = data[i];
-                }
-            }
-
-        }
 
 
     }

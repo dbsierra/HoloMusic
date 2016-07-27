@@ -34,7 +34,7 @@ public class PRoll_Note : MonoBehaviour {
 
     public void PlayingAnimation()
     {
-        mat.SetColor("_EmissionColor", new Color(0, .5f, .85f));
+        mat.SetColor("_EmissionColor", new Color(0, .4f, 1f));
     }
     public void StoppingAnimation()
     {

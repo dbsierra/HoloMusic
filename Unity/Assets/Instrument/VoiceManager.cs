@@ -21,6 +21,9 @@ namespace MusicDevice
         byte currentActiveVoices;
         float totalAmp;
 
+        private uint sampleTimer;
+        private uint oldSample;
+
         public VoiceManager(Voice[] voices)
         {
             voiceCount = voices.Length;
@@ -34,6 +37,7 @@ namespace MusicDevice
             }
             
         }
+
         public void InitVoiceManager(Voice[] voices)
         {
 
@@ -45,7 +49,7 @@ namespace MusicDevice
             
             v.NoteOn(n);
             n.voice = v;
-            
+
             if (currentActiveVoices < voiceCount)
                 currentActiveVoices++;
         }
@@ -62,11 +66,18 @@ namespace MusicDevice
 
         public float NextSample()
         {
+            if(sampleTimer - oldSample >= 1000)
+            {
+                oldSample = sampleTimer = 0;
+
+            }
+            sampleTimer += 1;
 
             float s = 0;
             totalAmp = 0;
             foreach(Voice v in voiceList)
-            {         
+            {
+                v.UpdateParams();
                 s += v.NextSample();
 
                 totalAmp += v.Gain;

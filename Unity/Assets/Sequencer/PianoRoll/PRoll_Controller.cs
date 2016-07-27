@@ -44,8 +44,7 @@ namespace Sequencer.PianoRoll
         //signifies when piano roll is done initializing
         bool ready;
 
-        //the sound producing instrument this will trigger
-        FMSynthesizer instrument;
+        
 
         uint globalSample;  //The current sample number
         uint sample;        //used for sequencer timing. Resets when == beath length
@@ -55,6 +54,9 @@ namespace Sequencer.PianoRoll
         public Transform NoteGeoContainer; //container for all of the note geometries
         public Transform TimelineMarker;
         public Renderer strip;
+        public Transform PianoKeys;
+        private Material[] PianoKeyMaterials;
+        public UIFMSynthesizer instrument; //the sound producing instrument this will trigger
 
         //main thread triggers from audio thread
         bool hitIt;
@@ -73,7 +75,7 @@ namespace Sequencer.PianoRoll
             matrix = new PRoll_Slot[notesPerMeasure, 12];
             
             step = mtStep = 0;
-            instrument = new FMSynthesizer();
+           // instrument = new FMSynthesizer();
            
             InitializePianoRoll(new Vector2(.01f, .01f));
 
@@ -82,7 +84,13 @@ namespace Sequencer.PianoRoll
 
             ready = true;
 
-            
+            //init piano key materials array
+            PianoKeyMaterials = new Material[12];
+            int i = 0;
+            foreach( Renderer r in PianoKeys.GetComponentsInChildren<Renderer>() )
+            {
+                PianoKeyMaterials[i++] = r.material;
+            }
         }
 
         IEnumerable waitToInit()
@@ -115,6 +123,11 @@ namespace Sequencer.PianoRoll
                     foreach (PRoll_Slot n in highlightNote_list)
                     {
                         n.NotePlayingAnimation();
+
+                        if (n.PitchIndex != 1 && n.PitchIndex != 3 && n.PitchIndex != 6 && n.PitchIndex != 8 && n.PitchIndex != 10)
+                            PianoKeyMaterials[n.PitchIndex].SetColor("_EmissionColor", new Color(0, .2f, 1));
+                        else
+                            PianoKeyMaterials[n.PitchIndex].SetColor("_EmissionColor", new Color(0, .45f, 1));
                     }
                     highlightNote_list.Clear();
                 }
@@ -126,6 +139,11 @@ namespace Sequencer.PianoRoll
                     foreach (PRoll_Slot n in deHighlightNote_list)
                     {
                         n.NoteStoppingAnimation();
+
+                        if( n.PitchIndex != 1 && n.PitchIndex != 3 && n.PitchIndex != 6 && n.PitchIndex != 8 && n.PitchIndex != 10 )
+                            PianoKeyMaterials[n.PitchIndex].SetColor("_EmissionColor", new Color(.4f, .4f, .4f  ));
+                        else
+                            PianoKeyMaterials[n.PitchIndex].SetColor("_EmissionColor", new Color(.06f, .06f, .06f));
                     }
                     deHighlightNote_list.Clear();
                 }
@@ -162,10 +180,10 @@ namespace Sequencer.PianoRoll
                         sample++;
 
                     //obtain our sample for audio playback!
-                    float s = instrument.NextSample();
+                   // float s = instrument.NextSample();
 
                     //if we are in stereo, duplicate the sample for L+R channels
-                    data[i] = .1f * s;
+                   // data[i] = .1f * s;
                     if (channels == 2)
                     {
                         data[i + 1] = data[i];

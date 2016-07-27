@@ -1,0 +1,134 @@
+fileFormatVersion: 2
+guid: 833376bfc491f574db8765276e623d79
+timeCreated: 1469491811
+licenseType: Pro
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: piano_key_0_geo
+    100004: piano_key_10_geo
+    100006: piano_key_11_geo
+    100008: piano_key_1_geo
+    100010: piano_key_2_geo
+    100012: piano_key_3_geo
+    100014: piano_key_4_geo
+    100016: piano_key_5_geo
+    100018: piano_key_6_geo
+    100020: piano_key_7_geo
+    100022: piano_key_8_geo
+    100024: piano_key_9_geo
+    400000: //RootNode
+    400002: piano_key_0_geo
+    400004: piano_key_10_geo
+    400006: piano_key_11_geo
+    400008: piano_key_1_geo
+    400010: piano_key_2_geo
+    400012: piano_key_3_geo
+    400014: piano_key_4_geo
+    400016: piano_key_5_geo
+    400018: piano_key_6_geo
+    400020: piano_key_7_geo
+    400022: piano_key_8_geo
+    400024: piano_key_9_geo
+    2300000: piano_key_0_geo
+    2300002: piano_key_10_geo
+    2300004: piano_key_11_geo
+    2300006: piano_key_1_geo
+    2300008: piano_key_2_geo
+    2300010: piano_key_3_geo
+    2300012: piano_key_4_geo
+    2300014: piano_key_5_geo
+    2300016: piano_key_6_geo
+    2300018: piano_key_7_geo
+    2300020: piano_key_8_geo
+    2300022: piano_key_9_geo
+    3300000: piano_key_0_geo
+    3300002: piano_key_10_geo
+    3300004: piano_key_11_geo
+    3300006: piano_key_1_geo
+    3300008: piano_key_2_geo
+    3300010: piano_key_3_geo
+    3300012: piano_key_4_geo
+    3300014: piano_key_5_geo
+    3300016: piano_key_6_geo
+    3300018: piano_key_7_geo
+    3300020: piano_key_8_geo
+    3300022: piano_key_9_geo
+    4300000: piano_key_0_geo
+    4300002: piano_key_1_geo
+    4300004: piano_key_2_geo
+    4300006: piano_key_3_geo
+    4300008: piano_key_4_geo
+    4300010: piano_key_5_geo
+    4300012: piano_key_6_geo
+    4300014: piano_key_7_geo
+    4300016: piano_key_8_geo
+    4300018: piano_key_9_geo
+    4300020: piano_key_10_geo
+    4300022: piano_key_11_geo
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

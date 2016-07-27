@@ -32,6 +32,8 @@ namespace MusicDevice
         //DSP goes here!
         float NextSample();
 
+        void UpdateParams();
+
     }
 
 }

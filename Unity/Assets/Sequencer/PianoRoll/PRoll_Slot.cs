@@ -15,8 +15,11 @@ namespace Sequencer.PianoRoll
         public MIDINote Note;
         public PRoll_Note NoteGeo;
 
+        GameObject DebugCube;
+
         void Start()
         {
+            DebugCube = GameObject.Find("DebugCube");
         }
 
         public void InsertNoteGeo()
@@ -45,16 +48,22 @@ namespace Sequencer.PianoRoll
         {
             if( !active && !locked)
                 PRoll_NoteDrawer.BeginNoteDraw(this);
+
+            DebugCube.transform.localScale = new Vector3(.055f, .055f, .055f);
         }
         public void OnNavigationUpdated( Vector3 relativePosition )
         {
             if (!active && !locked)
                 PRoll_NoteDrawer.DrawNote(relativePosition.x);
+
+            DebugCube.transform.localRotation = Quaternion.Euler(new Vector3(0, relativePosition.x * 180f, 0));
         }
         public void OnNavigationCompleted( Vector3 relativePosition )
         {
             if (!active && !locked)
                 InjectNote(PRoll_NoteDrawer.EndNoteDraw() );
+
+            DebugCube.transform.localScale = new Vector3(.02f, .02f, .02f);
         }
         private void InjectNote( byte duration )
         {

@@ -7,17 +7,33 @@ using System;
 public class FMSynthesizer : Instrument {
 
     VoiceManager voiceManager;
+    public UIFMSynthesizer UI;
 
-    public FMSynthesizer()
+    public string Name;
+
+    //
+    public float Attack1, Attack2;
+    public float Decay1, Decay2;
+    public float Sustain1, Sustain2;
+    public float Release1, Release2;
+    public float mod1Index, mod2Index, mod3Index;
+    public float mod1Ratio, mod2Ratio, mod3Ratio;
+    //
+
+    public FMSynthesizer(UIFMSynthesizer UI = null, int noOfVoices = 6 )
     {
-        
-        FMVoice[] voices = new FMVoice[6];
-        for( int i=0; i<voices.Length; i++)
+        Name = "hi";
+        this.UI = UI;
+
+        noOfVoices = Mathf.Clamp(noOfVoices, 2, 12);
+        FMVoice[] voices = new FMVoice[noOfVoices];
+        for (int i = 0; i < voices.Length; i++)
         {
-            voices[i] = new FMVoice("voice"+i);
+            voices[i] = new FMVoice("voice" + i, this);
+            voices[i].UpdateParams();
         }
         voiceManager = new VoiceManager(voices);
-        
+
     }
 
     /// <summary>
@@ -28,9 +44,6 @@ public class FMSynthesizer : Instrument {
     {
         //Debug.Log("On: " + n.midi);
         voiceManager.NoteOn(n);
-
-        
-
     }
 
     public override void NoteOff(MIDINote n)
@@ -48,8 +61,8 @@ public class FMSynthesizer : Instrument {
 
 public class FMVoice : Voice
 {
-    EnvelopeGenerator eg;
-    EnvelopeGenerator eg2;
+    public EnvelopeGenerator eg;
+    public EnvelopeGenerator eg2;
 
     public VoiceManager parentManager { get; set; }
     public float Gain { get; set; }
@@ -64,22 +77,45 @@ public class FMVoice : Voice
     private float[] table;
     private int index;
 
-    public FMVoice(string name)
+    UIFMSynthesizer p;
+
+    float mod1Index, mod2Index, mod3Index;
+    float mod1Ratio, mod2Ratio, mod3Ratio;
+
+    public void UpdateParams()
     {
+        eg.Attack = p.Attack1;
+        eg.Decay = p.Decay1;
+        eg.Sustain = p.Sustain1;
+        eg.Release = p.Release1;
+        eg2.Attack = p.Attack2;
+        eg2.Decay = p.Decay2;
+        eg2.Sustain = p.Sustain2;
+        eg2.Release = p.Release2;
+        mod1Index = p.mod1Index;
+        mod2Index = p.mod2Index;
+        mod3Index = p.mod3Index;
+        mod1Ratio = p.mod1Ratio;
+        mod2Ratio = p.mod2Ratio;
+        mod3Ratio = p.mod3Ratio;
+    }
+
+    public FMVoice(string name, FMSynthesizer parent)
+    {
+        Name = name;
+        p = parent.UI;
+
         eg = new EnvelopeGenerator(name);
-        eg.Attack = .01f;
-        eg.Decay = .3f;
-        eg.Sustain = .5f;
-        eg.Release = .2f;
+        eg.Attack = p.Attack1;
+        eg.Decay = p.Decay1;
+        eg.Sustain = p.Sustain1;
+        eg.Release = p.Release1;
 
         eg2 = new EnvelopeGenerator(name);
-        eg2.Attack = .01f;
-        eg2.Decay = .1f;
-        eg2.Sustain =  0f;
-        eg2.Release = .05f;
-
-
-        Name = name;
+        eg2.Attack = p.Attack2;
+        eg2.Decay = p.Decay2;
+        eg2.Sustain = p.Sustain2;
+        eg2.Release = p.Release2;
 
 
         table = new float[Settings.SampleRate / 220];
@@ -108,6 +144,12 @@ public class FMVoice : Voice
 
     float oldT;
 
+
+    public void SetParameters()
+    {
+
+    }
+
     public float NextSample()
     {
         float o = 0;
@@ -126,9 +168,9 @@ public class FMVoice : Voice
 
             float baseFreq = (TWO_PI * n.frequency * t) / Settings.SampleRate;
 
-            float m3 = Mathf.Sin(baseFreq * 7f) * .3f;
-            float m2 = Mathf.Sin(baseFreq * 3.3f + m3) * .9f;
-            float m1 = Mathf.Sin(baseFreq * 1.9f + m2 ) * .5f * eg2.GetSample();
+            float m3 = Mathf.Sin(baseFreq * mod3Ratio) * mod3Index;
+            float m2 = Mathf.Sin(baseFreq * mod2Ratio + m3) * mod2Index;
+            float m1 = Mathf.Sin(baseFreq * mod1Ratio + m2 ) * mod1Index * eg2.GetSample();
             o = Mathf.Sin(baseFreq + m1) * Gain;
 
             //o = Mathf.Sin( (TWO_PI * n.frequency * t) / Settings.SampleRate) * Gain;
