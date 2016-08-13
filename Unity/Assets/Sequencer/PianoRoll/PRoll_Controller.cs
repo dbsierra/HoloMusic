@@ -103,11 +103,11 @@ namespace Sequencer.PianoRoll
         {
             if (ready && !start)
             {
-                AddNote(0, Settings.getMIDI("C#4"), 1, 1);
-                AddNote(4, Settings.getMIDI("G#4"), 1, 2);
+                // AddNote(0, Settings.getMIDI("C#4"), 1, 1);
+               // AddNote(4, Settings.getMIDI("G#4"), 1, 2);
 
-                AddNote(8, Settings.getMIDI("E4"), 1, 1);
-                AddNote(12, Settings.getMIDI("A4"), 1, 1);
+               // AddNote(8, Settings.getMIDI("E4"), 1, 1);
+              //  AddNote(12, Settings.getMIDI("A4"), 1, 1);
                 RefreshPianoRoll();
                 start = true;
             }

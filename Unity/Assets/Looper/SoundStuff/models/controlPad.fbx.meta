@@ -1,0 +1,179 @@
+fileFormatVersion: 2
+guid: c8ed51393cf1df347875d60f748a0531
+timeCreated: 1471042765
+licenseType: Pro
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: bottomShell_geo
+    100002: button1_geo
+    100004: button2_geo
+    100006: button3_geo
+    100008: button4_geo
+    100010: button5_geo
+    100012: button6_geo
+    100014: button7_geo
+    100016: button__geo
+    100018: buttons
+    100020: //RootNode
+    100022: controlpadRotate
+    100024: directionalLight1
+    100026: pCube29
+    100028: pCube31
+    100030: pCube33
+    100032: pCube35
+    100034: pCube36
+    100036: pCube37
+    100038: pCube38
+    100040: pCube39
+    100042: screenGlass_geo
+    100044: seam_geo
+    100046: topShell_geo
+    400000: bottomShell_geo
+    400002: button1_geo
+    400004: button2_geo
+    400006: button3_geo
+    400008: button4_geo
+    400010: button5_geo
+    400012: button6_geo
+    400014: button7_geo
+    400016: button__geo
+    400018: buttons
+    400020: //RootNode
+    400022: controlpadRotate
+    400024: directionalLight1
+    400026: pCube29
+    400028: pCube31
+    400030: pCube33
+    400032: pCube35
+    400034: pCube36
+    400036: pCube37
+    400038: pCube38
+    400040: pCube39
+    400042: screenGlass_geo
+    400044: seam_geo
+    400046: topShell_geo
+    2300000: bottomShell_geo
+    2300002: button1_geo
+    2300004: button2_geo
+    2300006: button3_geo
+    2300008: button4_geo
+    2300010: button5_geo
+    2300012: button6_geo
+    2300014: button7_geo
+    2300016: button__geo
+    2300018: pCube29
+    2300020: pCube31
+    2300022: pCube33
+    2300024: pCube35
+    2300026: pCube36
+    2300028: pCube37
+    2300030: pCube38
+    2300032: pCube39
+    2300034: screenGlass_geo
+    2300036: seam_geo
+    2300038: topShell_geo
+    3300000: bottomShell_geo
+    3300002: button1_geo
+    3300004: button2_geo
+    3300006: button3_geo
+    3300008: button4_geo
+    3300010: button5_geo
+    3300012: button6_geo
+    3300014: button7_geo
+    3300016: button__geo
+    3300018: pCube29
+    3300020: pCube31
+    3300022: pCube33
+    3300024: pCube35
+    3300026: pCube36
+    3300028: pCube37
+    3300030: pCube38
+    3300032: pCube39
+    3300034: screenGlass_geo
+    3300036: seam_geo
+    3300038: topShell_geo
+    4300000: pCube29
+    4300002: pCube31
+    4300004: pCube33
+    4300006: pCube35
+    4300008: pCube36
+    4300010: pCube37
+    4300012: pCube38
+    4300014: pCube39
+    4300016: topShell_geo
+    4300018: screenGlass_geo
+    4300020: bottomShell_geo
+    4300022: button7_geo
+    4300024: button6_geo
+    4300026: button3_geo
+    4300028: button2_geo
+    4300030: button1_geo
+    4300032: button5_geo
+    4300034: button4_geo
+    4300036: button__geo
+    4300038: seam_geo
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
