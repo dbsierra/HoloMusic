@@ -56,8 +56,6 @@ namespace Timeline
             sample = 0;
             if (++currentBeat >= 4)
                currentBeat = 0;
-
-            this.pickup = pickup;
         }
 
         public float NextSample()

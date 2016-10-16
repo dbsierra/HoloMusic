@@ -20,6 +20,11 @@ public class SoundObj : MonoBehaviour {
     public GameObject RecordingSessionPrefab;
     public GameObject AudioObjectPrefab;
 
+    //Main thread transport booleans
+    bool Pause;
+    bool Play;
+    bool Stop;
+
     public enum State
     {
         ready=0,
@@ -35,7 +40,6 @@ public class SoundObj : MonoBehaviour {
     }
     void Initialize()
     {
-        Debug.Log(GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength + (16 * Settings.BeatLength));
         audioSource = gameObject.GetComponent<AudioSource>();
 
         RecordingSession rs = GameObject.Instantiate(RecordingSessionPrefab).GetComponent<RecordingSession>();
@@ -44,6 +48,10 @@ public class SoundObj : MonoBehaviour {
         GlobalTime.EnterPickup += OnPickupEnter;
         GlobalTime.EnterRecording += OnRecordEnter;
         GlobalTime.ExitRecording += OnRecordExit;
+
+        GlobalTime.OnStop += OnStop;
+        GlobalTime.OnPause += OnPause;
+        GlobalTime.OnPlay += OnPlay;
 
         done = true;
         state = State.ready;
@@ -56,6 +64,37 @@ public class SoundObj : MonoBehaviour {
         GlobalTime.ExitRecording -= OnRecordExit;
     }
 
+    void Update()
+    {
+        if( Pause )
+        {
+            Pause = false;
+            audioSource.Pause();
+        }
+        else if (Stop)
+        {
+            Stop = false;
+            audioSource.Stop();
+        }
+        else if(Play)
+        {
+            Play = false;
+            audioSource.Play();
+        }
+    }
+
+    public void OnStop()
+    {
+        Stop = true;
+    }
+    public void OnPause()
+    {
+        Pause = true;
+    }
+    public void OnPlay()
+    {
+        Play = true;
+    }
     public void OnPickupEnter()
     {
         Debug.Log("Pickup");
@@ -67,37 +106,46 @@ public class SoundObj : MonoBehaviour {
     public void OnRecordExit()
     {
         Debug.Log("Done Recording");
-        RecordFinish();
-        GlobalTime.Instance.Play();
+        RecordFinish();  
     }
 
     public void Record()
     {
         state = State.recording;
         controller.Record();
-        micIncomingClip = Microphone.Start(Microphone.devices[0], false, (int)( GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength + (16*Settings.BeatLength) ), AudioSettings.outputSampleRate);
-    }
-    public void RecordFinish()
-    {
+        micIncomingClip = Microphone.Start(Microphone.devices[0], false, (int)Mathf.Ceil( GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength + (16*Settings.BeatLength) ), AudioSettings.outputSampleRate);
         
-        state = State.ready;
-        controller.RecordStop();
-        Microphone.End(Microphone.devices[0]);
-        micFinalClip = micIncomingClip;
-        audioSource.clip = micFinalClip;
-        micAudioSamples = new float[micFinalClip.samples];
-        micFinalClip.GetData(micAudioSamples, 0);
-        audioSource.Play();
     }
 
+    public void RecordFinish()
+    {  
+        state = State.ready;
+        
+        Microphone.End(Microphone.devices[0]);
+
+        //declare and initialize array of incoming mic samples
+        micAudioSamples = new float[micIncomingClip.samples];
+        micIncomingClip.GetData(micAudioSamples, 0);
+
+        //create the final clip to be stored in this sound object and set the data to incoming mic samples
+        micFinalClip = AudioClip.Create("Recording", (GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength_s + (16 * Settings.BeatLength_s)), 1, Settings.SampleRate, false);
+        micFinalClip.SetData(micAudioSamples, 0);
+
+        //audioSource.clip = micFinalClip;
+
+        audioSource.Play();
+        controller.RecordDone();
+    }
 
     void OnAudioFilterRead(float[] data, int channels)
     {
+
         //grab whatever global sample we're currently at and go from there
         int s = GlobalTime.Instance.GlobalSample;
-        for (int i = 0; i < data.Length; i = i + channels)
+
+        for (int i = 0; i < data.Length; i+=channels)
         {
-            
+
             if (s < micAudioSamples.Length)
             {
                 data[i] = micAudioSamples[s++];

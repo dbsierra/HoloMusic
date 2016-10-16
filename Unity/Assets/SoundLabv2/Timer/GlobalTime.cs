@@ -28,6 +28,12 @@ namespace Timeline
         public static event RecordingAction EnterRecording;
         public delegate void RecordingExitAction();
         public static event RecordingExitAction ExitRecording;
+        public delegate void PauseAction();
+        public static event PauseAction OnPause;
+        public delegate void StopAction();
+        public static event StopAction OnStop;
+        public delegate void PlayAction();
+        public static event PlayAction OnPlay;
 
         //recording
         int pickupSteps;
@@ -98,6 +104,7 @@ namespace Timeline
             if(state == State.paused)
             {
                 state = State.playing;
+                OnPlay();
             }
         }
         public void Pause()
@@ -105,6 +112,7 @@ namespace Timeline
             if (state == State.playing || state == State.recording)
             {
                 state = State.paused;
+               OnPause();
             }
         }
         public void Stop()
@@ -112,6 +120,7 @@ namespace Timeline
             Pause();
             ResetPlayhead();
             metronome.Reset();
+            OnStop();
         }
         public void Record()
         {
@@ -119,6 +128,7 @@ namespace Timeline
             {
                 Stop();
             }
+
             metronome.pickup = true;
             state = State.pickup;
         }
@@ -126,10 +136,11 @@ namespace Timeline
 
         void OnAudioFilterRead(float[] data, int channels)
         {
+            Debug.Log(channels);
             if (ready && (state == State.playing || state == State.pickup || state == State.recording) )
             {
                 //foreach sample of this block of audio data
-                for (int i = 0; i < data.Length; i = i + channels)
+                for (int i = 0; i < data.Length; i+=channels )
                 {
 
                     //We have hit a step
@@ -191,11 +202,10 @@ namespace Timeline
                        data[i] = metronome.NextSample();     
                     }
 
-
                     //if we are in stereo, duplicate the sample for L+R channels
                     if (channels == 2)
                     {
-                        data[i + 1] = data[i];
+                       data[i + 1] = data[i];
                     }
 
                     globalSample++;

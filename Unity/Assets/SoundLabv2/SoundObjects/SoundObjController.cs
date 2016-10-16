@@ -48,9 +48,10 @@ public class SoundObjController : MonoBehaviour {
         state = State.recording;
         GlobalTime.Instance.Record();
     }
-    public void RecordStop()
+    public void RecordDone()
     {
         state = State.ready;
+        GlobalTime.Instance.Play();
     }
 
     void CreateSoundObject()
