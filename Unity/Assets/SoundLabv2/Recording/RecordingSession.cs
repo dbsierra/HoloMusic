@@ -30,12 +30,8 @@ public class RecordingSession : MonoBehaviour {
         {
             tapToRecord.SetActive(false);
             tapToFinish.SetActive(true);
-            targetSoundObject.Record();
-        }
-        else if (targetSoundObject.state == SoundObj.State.recording )
-        {
-            targetSoundObject.RecordFinish();
-            Object.Destroy(gameObject);
+            targetSoundObject.RecordInitialize();
         }
     }
+
 }
