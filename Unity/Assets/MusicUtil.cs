@@ -56,15 +56,16 @@ namespace MusicUtilities
             this.pitchLetterIndex = Settings.PitchIndexFromMidi(midi);
         }
     }
-    
 
     public class Settings
     {
+        public static bool Ready;
 
         public static int BPM;
         public static float BeatLength;
         public static int BeatLength_s;
         public static int SampleRate;
+        public static int NoOfStepsInBar = 16;
 
         public static byte MAX_VOICES = 16;
 
@@ -90,6 +91,7 @@ namespace MusicUtilities
         public static float inc;
         public static float TWO_PI = 6.28318530718f;
 
+        //Constructor
         static Settings()
         {
             SampleRate = AudioSettings.outputSampleRate;
@@ -99,6 +101,8 @@ namespace MusicUtilities
             BPM = 120;
             BeatLength = 60.0f / ((float)BPM * 4.0f); // * 4 to make our BPM resolution in 1/16th notes
             BeatLength_s = (int)(BeatLength * SampleRate);
+
+            NoOfStepsInBar = 16;
 
             notes.Add("C", 0);
             notes.Add("C#", 1);
@@ -153,6 +157,8 @@ namespace MusicUtilities
                 noteMidiLookUp.Add((byte)(10 + i * 12), new NoteInfo((byte)(10 + i * 12), noteToFrequency("A#" + i)));
                 noteMidiLookUp.Add((byte)(11 + i * 12), new NoteInfo((byte)(11 + i * 12), noteToFrequency("B" + i)));
             }
+
+            Ready = true;
         }
 
         public static byte PitchIndexFromMidi(byte m)

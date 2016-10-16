@@ -3,7 +3,7 @@ using System.Collections;
 
 public class InputTarget : MonoBehaviour {
 
-    public GameObject Target;
+   // public GameObject Target;
 
 	// Use this for initialization
 	void Start () {

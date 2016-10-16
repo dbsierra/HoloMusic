@@ -44,8 +44,6 @@ namespace Sequencer.PianoRoll
         //signifies when piano roll is done initializing
         bool ready;
 
-        
-
         uint globalSample;  //The current sample number
         uint sample;        //used for sequencer timing. Resets when == beath length
 
@@ -69,20 +67,27 @@ namespace Sequencer.PianoRoll
 
         public GameObject root;
 
-        #region MonoBehavior functions
+#region MonoBehavior functions
+
+        void OnEnable()
+        {
+            if( start )
+                MasterClock.OnStep += OnStep;
+        }
+        void OnDisable()
+        {
+            MasterClock.OnStep -= OnStep;
+        }
         void Start()
         {
             matrix = new PRoll_Slot[notesPerMeasure, 12];
             
             step = mtStep = 0;
-           // instrument = new FMSynthesizer();
            
             InitializePianoRoll(new Vector2(.01f, .01f));
 
             deHighlightNote_list = new List<PRoll_Slot>();
             highlightNote_list = new List<PRoll_Slot>();
-
-            ready = true;
 
             //init piano key materials array
             PianoKeyMaterials = new Material[12];
@@ -91,6 +96,10 @@ namespace Sequencer.PianoRoll
             {
                 PianoKeyMaterials[i++] = r.material;
             }
+
+            ready = true;
+
+            MasterClock.OnStep += OnStep;
         }
 
         IEnumerable waitToInit()
@@ -99,15 +108,15 @@ namespace Sequencer.PianoRoll
             ready = true;
         }
 
+        //We will do non audio thread work here, for example animations for the sequencer notes
         void Update()
         {
             if (ready && !start)
             {
-                // AddNote(0, Settings.getMIDI("C#4"), 1, 1);
+               // AddNote(0, Settings.getMIDI("C#4"), 1, 1);
                // AddNote(4, Settings.getMIDI("G#4"), 1, 2);
-
                // AddNote(8, Settings.getMIDI("E4"), 1, 1);
-              //  AddNote(12, Settings.getMIDI("A4"), 1, 1);
+               // AddNote(12, Settings.getMIDI("A4"), 1, 1);
                 RefreshPianoRoll();
                 start = true;
             }
@@ -159,42 +168,20 @@ namespace Sequencer.PianoRoll
                 Flush();
         }
 
-        uint oldSample;
         void OnAudioFilterRead(float[] data, int channels)
         {
             if (start)
             {
                 for (int i = 0; i < data.Length; i = i + channels)
                 {
-
+                    //TODO:
+                    //Optimize this so that it is not called on every sample! Should be able to store durations as step number (wrapping over)
                     ReleaseNotesFromStream(globalSample);
-
-                    //Sequencer step timer
-                    if (sample >= Settings.BeatLength_s)
-                    {
-                        OnStep();
-                        sample = 0;
-                        oldSample = globalSample;
-                    }
-                    else
-                        sample++;
-
-                    //obtain our sample for audio playback!
-                   // float s = instrument.NextSample();
-
-                    //if we are in stereo, duplicate the sample for L+R channels
-                   // data[i] = .1f * s;
-                    if (channels == 2)
-                    {
-                        data[i + 1] = data[i];
-                    }
-
                     globalSample++;
-
                 }
             }
         }
-        #endregion
+ #endregion
 
         private void ReleaseNotesFromStream( uint endSample )
         {
@@ -264,10 +251,16 @@ namespace Sequencer.PianoRoll
         /// <summary>
         /// Gets called on every step of the sequence
         /// </summary>
-        private void OnStep()
+        private void OnStep(int globalStep)
         {
+            if (globalStep == 0)
+                step = 0;
 
-                hitIt = true;
+            //Used for non-audio thread visual animations!
+            hitIt = true;
+
+            //For every note in this part of the matrix, add it to the stream!
+            //Also signify the notes that we are going to highlight
             for (int j = 0; j < 12; j++)
              {
                  if( matrix[step, j].active )
@@ -407,7 +400,7 @@ namespace Sequencer.PianoRoll
         }
 
         /// <summary>
-        /// Scan through piano roll and insert any notes that exist in the matrix but don't have geo;
+        /// Scan through piano roll and create visuals for any notes that exist in the matrix but don't have visuals associated with them;
         /// </summary>
         private void RefreshPianoRoll()
         {

@@ -38,6 +38,7 @@ namespace Sequencer.PianoRoll
             Note = PRoll_Options.Instance.Note;
 
             //TODO: proceduralize this instead of hard-coding the values by finding them yourself
+            //This array represents the scaleX that a cube should be for every one of the durations it can have (16 steps for now)
             thresholdValues = new float[] { 1, 3.862931f, 6.713108f, 9.483335f, 12.44833f, 15.3f, 18.15f, 21f, 23.85f, 26.7f, 29.6f, 32.4f, 35.3f, 38.15f, 41f, 43.85f };
             maxScale = thresholdValues[thresholdValues.Length - 1];
         }
@@ -95,6 +96,7 @@ namespace Sequencer.PianoRoll
             currentNoteBeingDrawn.localScale = new Vector3(scale, 1, 1);
         }
 
+        //Instantly create a note visual without manually drawing it in
         public static void InsertNoteGeo(PRoll_Slot slot)
         {
             if( slot.Note == null )

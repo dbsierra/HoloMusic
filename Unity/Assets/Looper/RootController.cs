@@ -29,7 +29,7 @@ public class RootController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+	    
 	}
 
     public void Begin()
@@ -87,7 +87,6 @@ public class RootController : MonoBehaviour {
 
         soundObj.transform.SetParent(transform, true);
 
-        //soundObj.transform.position
 
         SoundObjectInstance = soundObj.GetComponent<SoundObject>();
 

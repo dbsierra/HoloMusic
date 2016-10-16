@@ -29,19 +29,17 @@ public class RecordingDeviceButtons : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	
-        if( Time.time >= 10 )
+        if( Time.time >= 10 && !done )
         {
             done = true;
             RootController.Instance.Begin();
             GameObject.Destroy(Arrow);
         }
-
-
 	}
 
     public void OnGazeEnter()
     {
-        Debug.Log("gazed");
+        done = true;
         RootController.Instance.Begin();
         GameObject.Destroy(Arrow);
     }
@@ -54,13 +52,10 @@ public class RecordingDeviceButtons : MonoBehaviour {
     public void OnTap()
     {
         
-        if (Record )
+        if ( Record )
         {
             if( !RootController.Instance.recording )
                 RootController.Instance.TapToPlaceSoundObject();
-            //gameObject.GetComponent<AudioSource>().Stop();
-           // gameObject.GetComponent<AudioSource>().enabled = false;
-            //GameObject.Destroy(gameObject.GetComponent<AudioSource>());
         }
 
         if (TapToPlace)
@@ -80,7 +75,5 @@ public class RecordingDeviceButtons : MonoBehaviour {
         }
 
     }
-
-
 
 }
