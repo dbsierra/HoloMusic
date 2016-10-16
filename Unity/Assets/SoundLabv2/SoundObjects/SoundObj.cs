@@ -35,6 +35,7 @@ public class SoundObj : MonoBehaviour {
     }
     void Initialize()
     {
+        Debug.Log(GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength + (16 * Settings.BeatLength));
         audioSource = gameObject.GetComponent<AudioSource>();
 
         RecordingSession rs = GameObject.Instantiate(RecordingSessionPrefab).GetComponent<RecordingSession>();
@@ -67,6 +68,7 @@ public class SoundObj : MonoBehaviour {
     {
         Debug.Log("Done Recording");
         RecordFinish();
+        GlobalTime.Instance.Play();
     }
 
     public void Record()
@@ -83,14 +85,24 @@ public class SoundObj : MonoBehaviour {
         Microphone.End(Microphone.devices[0]);
         micFinalClip = micIncomingClip;
         audioSource.clip = micFinalClip;
+        micAudioSamples = new float[micFinalClip.samples];
+        micFinalClip.GetData(micAudioSamples, 0);
         audioSource.Play();
     }
 
 
     void OnAudioFilterRead(float[] data, int channels)
     {
+        //grab whatever global sample we're currently at and go from there
+        int s = GlobalTime.Instance.GlobalSample;
         for (int i = 0; i < data.Length; i = i + channels)
         {
+            
+            if (s < micAudioSamples.Length)
+            {
+                data[i] = micAudioSamples[s++];
+            }
+
             //if we are in stereo, duplicate the sample for L+R channels
             if (channels == 2)
             {

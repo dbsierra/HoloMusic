@@ -15,6 +15,7 @@ namespace Timeline
         int step;
         int sample;
         int globalSample;
+        public int GlobalSample { get { return globalSample; } }
         int maxSteps;
         int maxBars;
         int beatLength_s;
@@ -33,6 +34,7 @@ namespace Timeline
         int recordingSteps;
         public int MaxRecordingSteps { get { return recordingSteps;  } }
         bool resetOnNextStep;
+        bool CallExitRecording;
 
         public enum State
         {
@@ -61,6 +63,11 @@ namespace Timeline
             if (Input.GetKeyDown(KeyCode.V))
                 Record();
 
+            if( CallExitRecording )
+            {
+                ExitRecording();
+                CallExitRecording = false;
+            }
         }
         void Init()
         {
@@ -83,6 +90,7 @@ namespace Timeline
         {
             step = 0;
             sample = beatLength_s;
+            globalSample = 0;
         }
 
         public void Play()
@@ -115,6 +123,7 @@ namespace Timeline
             state = State.pickup;
         }
 
+
         void OnAudioFilterRead(float[] data, int channels)
         {
             if (ready && (state == State.playing || state == State.pickup || state == State.recording) )
@@ -126,28 +135,34 @@ namespace Timeline
                     //We have hit a step
                     if (sample >= beatLength_s)
                     {       
+                        //-----Step book keeping------//
                         //we are coming from pickup mode and are ready to record        
                         if( resetOnNextStep )
                         {
                             state = State.recording;                         
-                            resetOnNextStep = false;
                             ResetPlayhead();
+                            resetOnNextStep = false;
                         }
-                        //our recording time has finished
+                        //our recording time has finished, stop playing until ready to playback again
                         if (state == State.recording)
                         {
                             if (step >= recordingSteps)
                             {
                                 Stop();
+                                CallExitRecording = true;
                                 break;
-                            }
-                               
+                            }                          
                         }
-
                         //if step exceeds max, wrap around
                         if (step >= maxSteps)
+                        {
                             step = 0;
-
+                            globalSample = 0;
+                        }
+                        //------------------------//
+                        
+                        
+                        //-----Do step stuff-----//
                         //we are in pickup mode and have reached our last step
                         if (state == State.pickup && step >= pickupSteps-1)
                         {
@@ -159,10 +174,10 @@ namespace Timeline
                         { 
                             metronome.NextHit();
                         }
-                           
                         //Fire step event
                         if (OnStep != null)
                             OnStep(step);
+                        //------------------------//
 
                         //inc and reset
                         step++;
@@ -170,7 +185,6 @@ namespace Timeline
                     }
                     else
                         sample++;
-
 
                     if ( state == State.recording || state == State.pickup )
                     {
@@ -183,6 +197,8 @@ namespace Timeline
                     {
                         data[i + 1] = data[i];
                     }
+
+                    globalSample++;
                 }
             }
 
