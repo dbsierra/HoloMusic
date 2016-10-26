@@ -55,6 +55,7 @@
 				float4 vertex : POSITION;
 				float3 normal : NORMAL;
 				float2 uv : TEXCOORD0;
+
 			};
 
 			struct v2f
@@ -64,6 +65,8 @@
 				float4 vertex : SV_POSITION;
 				float4 worldPos : TEXCOORD1;
 				float4 objPos : TEXCOORD2;
+				float R : FLOAT;
+				float R2 : FLOAT;
 			};
 
 			sampler2D _MainTex;
@@ -89,10 +92,14 @@
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
-				o.normal = mul(unity_WorldToObject, v.normal);
+				o.normal = mul(unity_ObjectToWorld, v.normal);
 
 				o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-	
+
+				float3 I = normalize(o.worldPos - _WorldSpaceCameraPos.xyz);
+				o.R = saturate( pow(1 + dot(I, normalize(o.normal)), 1 ) );
+				o.R2 = o.R;
+
 				return o;
 			}
 
@@ -100,7 +107,7 @@
 			{
 				const float epsilon = 0.0001;
 
-				float2 uv = IN.objPos.xy;
+				half2 uv = half2( IN.objPos.x, IN.objPos.y/2. );
 
 				float o = 0.5;
 				float s = 1;
@@ -108,8 +115,7 @@
 
 				for (int i = 0; i < 2; i++)
 				{
-
-					float3 coord = float3(uv * s, _Time.y*.1);
+					float3 coord = float3( uv * s, _Time.y*.1);
 					float3 period = float3(s, s, 1.0) * 2.0;
 
 					o += snoise(coord) * w;
@@ -133,9 +139,12 @@
 				float g = cos(_Movement*_Time + o * _TWOPI * 2 * _Freq[1] - _Phase[1] * _TWOPI) * _Amp[1] + _DCOffset[1];
 				float b = cos(_Movement*_Time + o *  _TWOPI * 2 * _Freq[2] - _Phase[2] * _TWOPI) * _Amp[2] + _DCOffset[2];
 
-				//return float4( o, o, o, 1 );
 
-				return radius * half4(r, g, b, 1);
+				float3 I = normalize(IN.worldPos - _WorldSpaceCameraPos.xyz);
+				float fresnel =  pow(1 + dot(I, normalize(IN.normal) ), 2 );
+
+				//return half4(IN.R, IN.R, IN.R, 1);
+				return fresnel + saturate(1-IN.R) * half4(r, g, b, 1);
 				//return half4(radius, radius, radius, 1);
 
 
