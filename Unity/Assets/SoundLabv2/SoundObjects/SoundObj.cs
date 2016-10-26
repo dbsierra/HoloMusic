@@ -22,6 +22,10 @@ public class SoundObj : MonoBehaviour {
 
     bool audioStorageComplete;
 
+    string MicrophoneDevice; 
+
+    //main thread bools
+    bool bExitRecordingAnim;
 
     public enum TransportState
     {
@@ -60,6 +64,8 @@ public class SoundObj : MonoBehaviour {
         audioElement.transform.localPosition = Vector3.zero;
         audioElement.transform.SetParent(transform, false);
 
+        MicrophoneDevice = Microphone.devices[0];
+
         state = State.ready;
     }
     void Reset()
@@ -90,36 +96,24 @@ public class SoundObj : MonoBehaviour {
     {
         state = State.recordingInit;
         controller.RecordInitialize(this);
-        micIncomingClip = Microphone.Start(Microphone.devices[0], false, (int)Mathf.Ceil( GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength + (16*Settings.BeatLength) ), AudioSettings.outputSampleRate);
     }
+    public void InitializeMic()
+    {
+        micIncomingClip = Microphone.Start(MicrophoneDevice, false, (int)Mathf.Ceil(GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength + (16 * Settings.BeatLength)) + 1, AudioSettings.outputSampleRate);
+        
+    }
+    uint startSample;
     public void RecordStart()
     {
         state = State.recording;
+        startSample = GlobalTime.Instance.MasterSample;
     }
     public void RecordFinish()
     {
+        Debug.Log("Hey " + (GlobalTime.Instance.MasterSample-startSample) );
         state = State.storing;
 
-        Microphone.End(Microphone.devices[0]);
-
-        //declare and initialize array of incoming mic samples
-        micAudioSamples = new float[micIncomingClip.samples];
-        micIncomingClip.GetData(micAudioSamples, 0);
-
-        finalAudioSamples = new float[micAudioSamples.Length];
-        Debug.Log(recordingSampleLengthAll + " " + recordingSampleStart + " " + micAudioSamples.Length );
-        int c = 0;
-        for( int i=recordingSampleStart; i< micAudioSamples.Length; i++)
-        {
-            finalAudioSamples[c++] = micAudioSamples[i];
-        }
-
-        //Debug.Log(recordingSampleLengthUse + " " + micAudioSamples.Length);
-
-        //create the final clip to be stored in this sound object and set the data to incoming mic samples
-        //micFinalClip = AudioClip.Create("Recording", (GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength_s + (16 * Settings.BeatLength_s)), 1, Settings.SampleRate, false);
-        //micFinalClip.SetData(micAudioSamples, 0);
-        //audioSource.clip = micFinalClip;
+        FinalizeAudioRecording();
 
         Object.Destroy(recordingSession.gameObject);
         audioElement.gameObject.SetActive(true);
@@ -127,6 +121,56 @@ public class SoundObj : MonoBehaviour {
         Reset();
 
         state = State.audioSecured;
+
+        //Debug.Log(recordingSampleLengthUse + " " + micAudioSamples.Length);
+
+        //create the final clip to be stored in this sound object and set the data to incoming mic samples
+        //micFinalClip = AudioClip.Create("Recording", (GlobalTime.Instance.MaxRecordingSteps * Settings.BeatLength_s + (16 * Settings.BeatLength_s)), 1, Settings.SampleRate, false);
+        //micFinalClip.SetData(micAudioSamples, 0);
+        //audioSource.clip = micFinalClip;
+        Microphone.End(MicrophoneDevice);
+        
+    }
+    void FinalizeAudioRecording()
+    {
+        //declare and initialize array of incoming mic samples
+
+        micAudioSamples = new float[micIncomingClip.samples];
+        micIncomingClip.GetData(micAudioSamples, 0);
+
+        finalAudioSamples = new float[micAudioSamples.Length];
+        /*
+        //find first sample that is above .008
+        int c = recordingSampleStart;
+        for (int i = recordingSampleStart; i < micAudioSamples.Length; i++)
+        {
+            if( Mathf.Abs(micAudioSamples[i]) >= .008f )
+            {
+                break;
+            }
+            c++;
+        }
+        recordingSampleStart = c;
+        */
+
+        //WARNING WARNING HARD CODED NUMBER AHEAD, QUICK FIX
+        //errrr....I notice there is a gap of ~ 7000 samples from when the mic starts recording to when the metronome hits
+        recordingSampleStart += 7000;
+
+        //Debug.Log(recordingSampleLengthAll + " " + recordingSampleStart + " " + micAudioSamples.Length);
+        int c = 0;
+        for (int i = recordingSampleStart; i < micAudioSamples.Length; i++)
+        {
+            finalAudioSamples[c++] = micAudioSamples[i];
+        }
+
+        Debug.Log("l: " + (micAudioSamples.Length - recordingSampleStart) );
+
+        micFinalClip = AudioClip.Create("Recording", micAudioSamples.Length, 1, Settings.SampleRate, false);
+        micFinalClip.SetData(micAudioSamples, 0);
+        SavWav.Save("test.wav", micFinalClip);
+        micFinalClip.SetData(finalAudioSamples, 0);
+        SavWav.Save("test2.wav", micFinalClip);
     }
     //------------------------------------------------------------------------------//
     #endregion
@@ -151,10 +195,13 @@ public class SoundObj : MonoBehaviour {
     #endregion
 
 
+    bool PrintSample = true;
+    public bool Me;
 
- 
     #region Execution logic
     //-------------------------,.-'`'-.,.-'`'-.,.-'`'-.,----------------------------//
+    //TODO
+    //It is not really in sync, it's getting cut off before it can play the last samples
     void OnAudioFilterRead(float[] data, int channels)
     {
         //Debug.Log(state);
@@ -162,8 +209,8 @@ public class SoundObj : MonoBehaviour {
         if ( transportState == TransportState.playing && state == State.audioSecured )
         {
             //grab whatever global sample we're currently at and go from there
-            int s = GlobalTime.Instance.GlobalSample;
-
+            int s = GlobalTime.Instance.SyncSample;
+           // Debug.Log("my sample: " + s);
             for (int i = 0; i < data.Length; i += channels)
             {
 
@@ -189,6 +236,7 @@ public class SoundObj : MonoBehaviour {
         }
         else if (state == State.recording)
         {
+            //Debug.Log("here it is: " + recordingSampleStart);
             for (int i = 0; i < data.Length; i += channels)
             {
                 recordingSampleLengthAll++;
@@ -197,9 +245,15 @@ public class SoundObj : MonoBehaviour {
 
     }
 
+
     void Update()
     {
-       // Debug.Log(audioSource.isPlaying);
+  
+
+            if (bExitRecordingAnim)
+        {
+            bExitRecordingAnim = false;
+        }
     }
     //-------------------------,.-'`'-.,.-'`'-.,.-'`'-.,----------------------------//
     #endregion

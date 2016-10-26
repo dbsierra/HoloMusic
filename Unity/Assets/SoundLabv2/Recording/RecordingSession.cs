@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Timeline;
 
 public class RecordingSession : MonoBehaviour {
 
@@ -28,9 +29,12 @@ public class RecordingSession : MonoBehaviour {
     {
         if( targetSoundObject.state == SoundObj.State.ready )
         {
+            //with pickup, stop first everything
+
             tapToRecord.SetActive(false);
             tapToFinish.SetActive(true);
             targetSoundObject.RecordInitialize();
+
         }
     }
 

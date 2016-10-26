@@ -26,6 +26,10 @@ public class SoundObjController : MonoBehaviour {
 
     private SoundObj curRecSoundObj;
 
+    //main thread bools
+    bool bFinalizeAudioRecording;
+    bool bInitializeAudioRecording;
+
     #region Initializers
     //------------------------------------------------------------------------------//
     void Start () {
@@ -81,6 +85,7 @@ public class SoundObjController : MonoBehaviour {
     }
     public void OnPickupEnter()
     {
+        bInitializeAudioRecording = true;
     }
     public void OnRecordEnter()
     {
@@ -99,7 +104,7 @@ public class SoundObjController : MonoBehaviour {
     //------------------------------------------------------------------------------//
     void Pause()
     {
-        Debug.Log("Pausing");
+        //Debug.Log("Pause");
         foreach (SoundObj so in SoundObjects)
         {
             so.Pause();
@@ -107,7 +112,7 @@ public class SoundObjController : MonoBehaviour {
     }
     void Play()
     {
-        Debug.Log("Playing");
+        //Debug.Log("Play");
         foreach (SoundObj so in SoundObjects)
         {
             so.Play();
@@ -115,7 +120,7 @@ public class SoundObjController : MonoBehaviour {
     }
     void Stop()
     {
-        Debug.Log("Stopping");
+        //Debug.Log("Stop");
         foreach (SoundObj so in SoundObjects)
         {
             so.Stop();
@@ -134,9 +139,12 @@ public class SoundObjController : MonoBehaviour {
         state = State.recordInit;
         curRecSoundObj = soundObj;
 
+        //if first recording, use metronome
+
+
         //with pickup, stop first everything
         GlobalTime.Instance.Stop();
-        GlobalTime.Instance.Record();
+        GlobalTime.Instance.Record();     
     }
     public void Record()
     {
@@ -145,13 +153,20 @@ public class SoundObjController : MonoBehaviour {
     }
     public void RecordDone()
     {
-        state = State.storing;
-
+        bFinalizeAudioRecording = true;
+    }
+    IEnumerator WaitUntilFinishedStoringAudio()
+    {
         curRecSoundObj.RecordFinish();
 
-        GlobalTime.Instance.Play();
+        Debug.Log("audio being stored");
+        while ( curRecSoundObj.state != SoundObj.State.audioSecured )
+            yield return null;
 
+        Debug.Log("done storing audio");
         curRecSoundObj = null;
+
+        GlobalTime.Instance.Play();
 
         state = State.ready;
     }
@@ -168,6 +183,21 @@ public class SoundObjController : MonoBehaviour {
 	    if( state == State.ready && Input.GetKeyDown(KeyCode.Q) )
         {
             CreateSoundObject();
+        }
+
+        if(bInitializeAudioRecording)
+        {
+            bInitializeAudioRecording = false;
+            Debug.Log(curRecSoundObj);
+            if (curRecSoundObj)
+                curRecSoundObj.InitializeMic();
+        }
+
+        if( bFinalizeAudioRecording )
+        {
+            bFinalizeAudioRecording = false;
+            state = State.storing;
+            StartCoroutine(WaitUntilFinishedStoringAudio());
         }
     }
     //-------------------------,.-'`'-.,.-'`'-.,.-'`'-.,----------------------------//

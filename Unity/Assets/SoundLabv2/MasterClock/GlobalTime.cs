@@ -6,6 +6,10 @@ namespace Timeline
 {
     public class GlobalTime : MonoBehaviour
     {
+        private uint masterSample;
+        public uint MasterSample { get { return masterSample; } }
+        private float masterTime;
+        public float MasterTime { get { return masterTime; } }
 
         public static GlobalTime Instance;
         public bool MetronomeOn;
@@ -16,7 +20,8 @@ namespace Timeline
         int step;
         int sample;
         int globalSample;
-        public int GlobalSample { get { return globalSample; } }
+        int syncSample;
+        public int SyncSample { get { return syncSample; } }
         int maxSteps;
         int maxBars;
         int beatLength_s;
@@ -39,23 +44,20 @@ namespace Timeline
         //recording
         int pickupSteps;
         int recordingSteps;
+        int recordingSteps_s;
+        int recordTimer_s;
+        int stepRecord;
         public int MaxRecordingSteps { get { return recordingSteps;  } }
         bool resetOnNextStep;
-        bool CallExitRecording;
-        bool bEnterRecording;
-        bool bEnterPickup;
-
-        bool bStop;
-        bool bPause;
-        bool bPlay;
 
         public enum State
         {
             paused = 0,
             stopped = 1,
             playing = 2,
-            pickup = 3,
-            recording = 4
+            enterPickup = 3,
+            pickup = 4,
+            recording = 5
         };
         public State state;
 
@@ -80,12 +82,12 @@ namespace Timeline
 
             //recording
             pickupSteps = 16;
-            recordingSteps = maxSteps;           
+            recordingSteps = maxSteps;
+            recordingSteps_s = recordingSteps * Settings.BeatLength_s;
+            Debug.Log(recordingSteps_s);
         }
         //------------------------------------------------------------------------------//
         #endregion
-
-
 
 
         #region Transport functions
@@ -101,7 +103,7 @@ namespace Timeline
             if(state == State.paused || state == State.stopped )
             {
                 state = State.playing;
-                bPlay = true;
+                OnPlay();
             }
         }
         public void Pause()
@@ -109,7 +111,7 @@ namespace Timeline
             if (state == State.playing || state == State.recording)
             {
                 state = State.paused;
-                bPause = true;
+                OnPause();
             }
         }
         public void Stop()
@@ -117,68 +119,83 @@ namespace Timeline
             state = State.stopped;
             ResetPlayhead();
             metronome.Reset();
-            bStop = true;
+            OnStop();
         }
         public void Record()
         {
             if ( RecordWithPickup )
             {
-                state = State.pickup;
+                state = State.enterPickup;
                 metronome.pickup = true;
-                bEnterPickup = true;
             }
             else
             {
                 state = State.recording;
-                bPlay = true;
+                OnPlay();
                 metronome.pickup = false;
-                bEnterRecording = true;
+                EnterRecording();
             }   
         }
         public void RecordStop()
         {
             Stop();
-            CallExitRecording = true;
+            ExitRecording();
         }
         //------------------------------------------------------------------------------//
         #endregion
 
-       
-
+        bool startTiming;
+        int sampleTimer;
+        float startTime;
 
         #region Execution logic
         //-------------------------,.-'`'-.,.-'`'-.,.-'`'-.,----------------------------//
         void OnAudioFilterRead(float[] data, int channels)
         {
-            if ( state == State.playing || state == State.pickup || state == State.recording )
+            if (state == State.playing || state == State.pickup || state == State.enterPickup || state == State.recording)
             {
-                //foreach sample of this block of audio data
-                for (int i = 0; i < data.Length; i+=channels )
+                //we are coming from pickup mode and are ready to record        
+                if (resetOnNextStep)
                 {
+                    resetOnNextStep = false;
+                    recordTimer_s = 0;
+                    state = State.recording;
+                    metronome.pickup = false;
+                    EnterRecording();
+                    OnPlay();
+                    startTiming = false;
+
+                }
+
+                syncSample = globalSample;
+
+                //foreach sample of this block of audio data
+                for (int i = 0; i < data.Length; i += channels)
+                {
+                    if (startTiming)
+                        sampleTimer++;
+
+                    masterSample++;
+                    // masterTime = (float)masterSample / (float)Settings.SampleRate;
+
+                    //our recording time has finished, stop playing until ready to playback again
+                    if (state == State.recording)
+                    {
+                        if (recordTimer_s >= recordingSteps_s)
+                        {
+                            Debug.Log(recordTimer_s);
+                            recordTimer_s = 0;
+                            RecordStop();
+                            break;
+                        }
+                    }
+
 
                     //  [....STEP....]  //
                     if (sample >= beatLength_s)
-                    {       
+                    {
                         //-----Step book keeping------//
-                        //we are coming from pickup mode and are ready to record        
-                        if( resetOnNextStep )
-                        {
-                            resetOnNextStep = false;
-                            state = State.recording;   
-                            ResetPlayhead();
-                            metronome.pickup = false;
-                            bPlay = true;
-                            bEnterRecording = true;
-                        }
-                        //our recording time has finished, stop playing until ready to playback again
-                        if (state == State.recording)
-                        {
-                            if (step >= recordingSteps)
-                            {
-                                RecordStop();
-                                break;
-                            }                          
-                        }
+
                         //if step exceeds max, wrap around
                         if (step >= maxSteps)
                         {
@@ -186,48 +203,70 @@ namespace Timeline
                             globalSample = 0;
                         }
                         //------------------------//
-                        
-                        
+
                         //-----Do step stuff-----//
                         //we are in pickup mode and have reached our last step
-                        if (state == State.pickup && step >= pickupSteps-1)
+                        if (state == State.pickup && step >= pickupSteps)
                         {
-                            resetOnNextStep = true;   
+
+                            resetOnNextStep = true;
+                            ResetPlayhead();
+                            metronome.Reset();
+                            break;
                         }
+
                         //play metronome on these steps
-                        if ( step % 4 == 0 && (state == State.recording || state == State.pickup) )
-                        { 
+                        if (step % 4 == 0)
+                        {
+                            if( state == State.enterPickup)
+                            {
+                                EnterPickup();
+                                state = State.pickup;
+                                Debug.Log("pickup now");
+                            }
+
                             metronome.NextHit();
                         }
+
                         //Fire step event
                         if (OnStep != null)
                             OnStep(step);
                         //------------------------//
 
-
                         //inc and reset
                         step++;
+                        if (state == State.recording)
+                            stepRecord++;
                         sample = 0;
                     }
                     else
                         sample++;
 
-                    if ( state == State.recording || state == State.pickup )
-                    {
-                       data[i] = metronome.NextSample();     
-                    }
+
+                    if (state == State.recording)
+                        recordTimer_s++;
+
+                    if ( state == State.pickup || state == State.recording || MetronomeOn )
+                        data[i] = metronome.NextSample();
+                    
 
                     //if we are in stereo, duplicate the sample for L+R channels
                     if (channels == 2)
                     {
-                       data[i + 1] = data[i];
+                        data[i + 1] = data[i];
                     }
 
                     globalSample++;
                 }
             }
-
-
+            else
+            {
+                for (int i = 0; i < data.Length; i += channels)
+                {
+                    masterSample++;
+                   // masterTime = (float)masterSample / (float)Settings.SampleRate;
+                }
+            }
         }
         void Update()
         {
@@ -241,44 +280,6 @@ namespace Timeline
                 Record();
 
 
-
-            if (bStop)
-            {
-                bStop = false;
-                OnStop();
-            }
-            if (bPause)
-            {
-                bPause = false;
-                OnPause();
-            }
-            if (bPlay)
-            {
-                bPlay = false;
-                OnPlay();
-            }
-
-
-            if (CallExitRecording)
-            {
-                CallExitRecording = false;
-                Debug.Log("Exit Recording " + Time.time);
-                ExitRecording();
-            }
-
-            if (bEnterRecording)
-            {
-                bEnterRecording = false;
-                Debug.Log("Enter Recording " + Time.time);
-                EnterRecording();
-            }
-
-            if (bEnterPickup)
-            {
-                bEnterPickup = false;
-                Debug.Log("Enter Pickup " + Time.time);
-                EnterPickup();
-            }
         }
         //-------------------------,.-'`'-.,.-'`'-.,.-'`'-.,----------------------------//
         #endregion
